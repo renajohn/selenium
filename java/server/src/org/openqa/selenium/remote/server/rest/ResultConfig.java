@@ -60,7 +60,8 @@ public class ResultConfig {
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
 
-    this.wptHookAwareHandler = new WptHookAwareHandler(log, "http://localhost:8888");
+    String hookEndPoint = System.getProperty("hookEndPoint", "http://localhost:8888");
+    this.wptHookAwareHandler = new WptHookAwareHandler(log, hookEndPoint);
   }
 
 
