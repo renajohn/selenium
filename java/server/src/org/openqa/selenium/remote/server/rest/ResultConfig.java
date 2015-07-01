@@ -17,17 +17,13 @@
 
 package org.openqa.selenium.remote.server.rest;
 
+import com.appdynamics.wpt.WptHookAwareHandler;
+import com.appdynamics.wpt.WptHookClient;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.remote.Command;
-import org.openqa.selenium.remote.DriverCommand;
-import org.openqa.selenium.remote.ErrorCodes;
-import org.openqa.selenium.remote.Response;
-import org.openqa.selenium.remote.SessionId;
-import org.openqa.selenium.remote.SessionNotFoundException;
-import org.openqa.selenium.remote.UnreachableBrowserException;
+import org.openqa.selenium.remote.*;
 import org.openqa.selenium.remote.server.DriverSessions;
 import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
@@ -50,6 +46,7 @@ public class ResultConfig {
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
   private final Logger log;
+  private final WptHookAwareHandler wptHookAwareHandler;
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -62,6 +59,8 @@ public class ResultConfig {
     this.log = log;
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
+
+    this.wptHookAwareHandler = new WptHookAwareHandler(log, "http://localhost:8888");
   }
 
 
@@ -108,7 +107,13 @@ public class ResultConfig {
         log.info(String.format("Executing: %s)", handler));
       }
 
+      if (sessionId != null && sessions.get(sessionId).getCapabilities().is(CapabilityType.LOCK_STEP)) {
+        // use step lock
+        wptHookAwareHandler.waitIfNeeded(command);
+      }
+
       Object value = handler.handle();
+
       if (value instanceof Response) {
         response = (Response) value;
       } else {

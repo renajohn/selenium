@@ -46,6 +46,8 @@ public interface CapabilityType {
 
   String ENABLE_PROFILING_CAPABILITY = "webdriver.logging.profiler.enabled";
 
+
+
   /**
    * @deprecated Use PAGE_LOAD_STRATEGY instead
    */
@@ -66,4 +68,13 @@ public interface CapabilityType {
     String PROXY_PAC = "proxy_pac";
     String ENSURING_CLEAN_SESSION = "ensureCleanSession";
   }
+
+  /**
+   * AppDynamics extensions
+   *
+   * @author Renault John Lecoultre <renault.lecoultre@appdynamics.com>
+   * @since 7/1/15
+   * Copyright 2015 AppDynamics inc. All rights reserved
+   */
+  final String LOCK_STEP = "lockStep";
 }
