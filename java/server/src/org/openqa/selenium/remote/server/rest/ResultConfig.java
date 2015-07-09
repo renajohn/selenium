@@ -46,7 +46,9 @@ public class ResultConfig {
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
   private final Logger log;
-  private final WptHookAwareHandler wptHookAwareHandler;
+
+  // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
+  private static WptHookAwareHandler wptHookAwareHandler;
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -60,8 +62,10 @@ public class ResultConfig {
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
 
-    String hookEndPoint = System.getProperty("hookEndPoint", "http://localhost:8888");
-    this.wptHookAwareHandler = new WptHookAwareHandler(log, hookEndPoint);
+    if (wptHookAwareHandler == null) {
+      String hookEndPoint = System.getProperty("hookEndPoint", "http://localhost:8888");
+      wptHookAwareHandler = new WptHookAwareHandler(log, hookEndPoint);
+    }
   }
 
 
