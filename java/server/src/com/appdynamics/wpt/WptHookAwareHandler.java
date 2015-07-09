@@ -33,16 +33,18 @@ public class WptHookAwareHandler {
 
   public boolean waitIfNeeded(Command command) throws Exception {
     boolean hasWaited = false;
-    if (command.getName().equals(DriverCommand.QUIT) || command.getName().equals(DriverCommand.CLOSE)) {
-      // we need to inform WPT that the session will terminate
-      wptHookClient.webdriverDone();
-    }
 
     if (!command.getName().equals(DriverCommand.NEW_SESSION)) {
       // Check if the Wpt Hook is ready before executing the command.
       waitUntilHookReady();
       hasWaited = true;
     }
+
+    if (command.getName().equals(DriverCommand.QUIT) || command.getName().equals(DriverCommand.CLOSE)) {
+      // we need to inform WPT that the session will terminate
+      wptHookClient.webdriverDone();
+    }
+
     // else, this is the NEW_SESSION command which spawns the browser in the first place. So, checking with the
     // hook doesn't make sense. Allow the command to go through.
     log.info("Executing driver command: {} " + command.toString());
