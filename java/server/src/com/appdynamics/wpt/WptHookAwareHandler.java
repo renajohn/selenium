@@ -19,21 +19,20 @@ import java.net.MalformedURLException;
  * @since 2/14/2015
  */
 public class WptHookAwareHandler {
-  private WptHookClient wptHookClient;
   private final Logger log;
+  private WptHookClient wptHookClient;
 
   public WptHookAwareHandler(Logger log, String url) {
-    this.log = log;
     try {
       wptHookClient = new WptHookClient(url, log);
     } catch (MalformedURLException e) {
-      e.printStackTrace();
+      log.severe("Failed to initialize WptHookClient: " + e.getMessage());
     }
+    this.log = log;
   }
 
   public boolean waitIfNeeded(Command command) throws Exception {
     boolean hasWaited = false;
-
     if (command.getName().equals(DriverCommand.QUIT) || command.getName().equals(DriverCommand.CLOSE)) {
       // we need to inform WPT that the session will terminate
       wptHookClient.webdriverDone();
@@ -61,7 +60,7 @@ public class WptHookAwareHandler {
         if (wptHookClient.isHookReady()) {
           break;
         }
-        Thread.sleep(1000);
+        Thread.sleep(100);
       } catch (IOException e) {
         log.severe("Unable to get response for 'is_hook_ready' request!");
         throw new RuntimeException("Cannot reach WptHook", e);

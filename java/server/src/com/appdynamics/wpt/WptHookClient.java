@@ -37,7 +37,14 @@ public class WptHookClient {
   }
 
   public boolean isHookReady() throws IOException {
-    String response = getResponse(hookReadyUrl);
+    String response;
+    try {
+      response = getResponse(hookReadyUrl);
+    } catch(IOException e) {
+      this.log.info("Can't connect to hook, probably not ready");
+      return false;
+    }
+
     JsonObject json = new JsonParser().parse(response).getAsJsonObject();
     log.info(response);
     return (json != null && json.getAsJsonObject("data").getAsJsonPrimitive("ready").getAsBoolean());
