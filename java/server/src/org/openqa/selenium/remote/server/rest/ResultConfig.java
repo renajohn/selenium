@@ -18,7 +18,7 @@
 package org.openqa.selenium.remote.server.rest;
 
 import com.appdynamics.wpt.WptHookAwareHandler;
-import com.appdynamics.wpt.WptHookClient;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
@@ -112,7 +112,7 @@ public class ResultConfig {
         log.info(String.format("Executing: %s)", handler));
       }
 
-      if (sessionId != null && sessions.get(sessionId).getCapabilities().is(CapabilityType.LOCK_STEP)) {
+      if (sessionId != null && sessions.get(sessionId).getCapabilities().is(CapabilityType.WPT_LOCK_STEP)) {
         // use step lock
         wptHookAwareHandler.waitIfNeeded(command);
       }
