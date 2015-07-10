@@ -270,7 +270,7 @@ public class DefaultSession implements Session {
        * @since 7/1/15
        * Copyright 2015 AppDynamics inc. All rights reserved
        */
-      caps.setCapability(CapabilityType.LOCK_STEP, this.capabilities.is(CapabilityType.LOCK_STEP));
+      caps.setCapability(CapabilityType.WPT_LOCK_STEP, this.capabilities.is(CapabilityType.WPT_LOCK_STEP));
 
       return caps;
     }
