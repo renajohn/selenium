@@ -1,0 +1,7 @@
+
+java_library(name = "wpt",
+  srcs = [ "*.java" ],
+  deps = [
+    "//java/client/src/org/openqa/selenium/remote:api",
+    "//java/client/src/org/openqa/selenium/remote",
+  ])

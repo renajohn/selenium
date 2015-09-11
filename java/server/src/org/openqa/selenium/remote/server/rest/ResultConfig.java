@@ -17,17 +17,13 @@
 
 package org.openqa.selenium.remote.server.rest;
 
+import com.appdynamics.wpt.WptHookAwareHandler;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.remote.Command;
-import org.openqa.selenium.remote.DriverCommand;
-import org.openqa.selenium.remote.ErrorCodes;
-import org.openqa.selenium.remote.Response;
-import org.openqa.selenium.remote.SessionId;
-import org.openqa.selenium.remote.SessionNotFoundException;
-import org.openqa.selenium.remote.UnreachableBrowserException;
+import org.openqa.selenium.remote.*;
 import org.openqa.selenium.remote.server.DriverSessions;
 import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
@@ -51,6 +47,9 @@ public class ResultConfig {
   private final DriverSessions sessions;
   private final Logger log;
 
+  // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
+  private static WptHookAwareHandler wptHookAwareHandler;
+
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
       DriverSessions sessions, Logger log) {
@@ -62,6 +61,11 @@ public class ResultConfig {
     this.log = log;
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
+
+    if (wptHookAwareHandler == null) {
+      String hookEndPoint = System.getProperty("hookEndPoint", "http://localhost:8888");
+      wptHookAwareHandler = new WptHookAwareHandler(log, hookEndPoint);
+    }
   }
 
 
@@ -108,7 +112,13 @@ public class ResultConfig {
         log.info(String.format("Executing: %s)", handler));
       }
 
+      if (sessionId != null && sessions.get(sessionId).getCapabilities().is(CapabilityType.WPT_LOCK_STEP)) {
+        // use step lock
+        wptHookAwareHandler.waitIfNeeded(command);
+      }
+
       Object value = handler.handle();
+
       if (value instanceof Response) {
         response = (Response) value;
       } else {

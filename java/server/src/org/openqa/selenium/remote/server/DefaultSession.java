@@ -264,6 +264,14 @@ public class DefaultSession implements Session {
       if (instance instanceof HasTouchScreen) {
         caps.setCapability(CapabilityType.HAS_TOUCHSCREEN, true);
       }
+
+      /**
+       * @author Renault John Lecoultre <renault.lecoultre@appdynamics.com>
+       * @since 7/1/15
+       * Copyright 2015 AppDynamics inc. All rights reserved
+       */
+      caps.setCapability(CapabilityType.WPT_LOCK_STEP, this.capabilities.is(CapabilityType.WPT_LOCK_STEP));
+
       return caps;
     }
   }
