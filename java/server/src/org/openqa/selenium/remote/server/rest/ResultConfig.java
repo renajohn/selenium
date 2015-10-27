@@ -52,16 +52,13 @@ public class ResultConfig {
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
   private final Logger log;
-  private final Set<String> nonInvasiveCommands = new HashSet<String>() {{
+  private final Set<String> readOnlyCommands = new HashSet<String>() {{
     add(GET_ALL_SESSIONS);
     add(GET_CAPABILITIES);
 
     add(STATUS);
 
-    add(ADD_COOKIE);
     add(GET_ALL_COOKIES);
-    add(DELETE_COOKIE);
-    add(DELETE_ALL_COOKIES);
 
     add(FIND_ELEMENT);
     add(FIND_ELEMENTS);
@@ -102,48 +99,32 @@ public class ResultConfig {
     add(SET_SCRIPT_TIMEOUT);
 
     add(GET_LOCATION);
-    add(SET_LOCATION);
     add(GET_APP_CACHE);
     add(GET_APP_CACHE_STATUS);
-    add(CLEAR_APP_CACHE);
     add(IS_BROWSER_ONLINE);
-    add(SET_BROWSER_ONLINE);
 
     add(GET_LOCAL_STORAGE_ITEM);
     add(GET_LOCAL_STORAGE_KEYS);
-    add(SET_LOCAL_STORAGE_ITEM);
-    add(REMOVE_LOCAL_STORAGE_ITEM);
-    add(CLEAR_LOCAL_STORAGE);
     add(GET_LOCAL_STORAGE_SIZE);
 
     add(GET_SESSION_STORAGE_ITEM);
     add(GET_SESSION_STORAGE_KEYS);
-    add(SET_SESSION_STORAGE_ITEM);
-    add(REMOVE_SESSION_STORAGE_ITEM);
-    add(CLEAR_SESSION_STORAGE);
     add(GET_SESSION_STORAGE_SIZE);
 
-    add(SET_SCREEN_ORIENTATION);
     add(GET_SCREEN_ORIENTATION);
 
     add(IME_GET_AVAILABLE_ENGINES);
     add(IME_GET_ACTIVE_ENGINE);
     add(IME_IS_ACTIVATED);
-    add(IME_DEACTIVATE);
-    add(IME_ACTIVATE_ENGINE);
 
-    add(SET_WINDOW_SIZE);
-    add(SET_WINDOW_POSITION);
     add(GET_WINDOW_SIZE);
     add(GET_WINDOW_POSITION);
-    add(MAXIMIZE_WINDOW);
 
     add(GET_AVAILABLE_LOG_TYPES);
     add(GET_LOG);
     add(GET_SESSION_LOGS);
 
     add(GET_NETWORK_CONNECTION);
-    add(SET_NETWORK_CONNECTION);
   }};
   // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
   private static WptHookClient wptHookClient;
@@ -216,7 +197,7 @@ public class ResultConfig {
 
       if (sessionId != null
             && sessions.get(sessionId).getCapabilities().is(WPT_LOCK_STEP)
-            && !nonInvasiveCommands.contains(command.getName())
+            && !readOnlyCommands.contains(command.getName())
             && !NEW_SESSION.equals(command.getName())) {
         wptHookClient.waitUntilHookReady();
         if (QUIT.equals(command.getName()) || CLOSE.equals(command.getName())) {
