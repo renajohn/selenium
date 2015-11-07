@@ -40,7 +40,9 @@ public class WptHookClient {
 
   public void notifyNextWebdriverAction() {
     try {
+      log.info("Sending /event/webdriver_done command to the hook");
       getResponse(nextActionUrl);
+      log.info("Done sending /event/webdriver_done command to the hook");
     } catch (Exception e) {
       // ignore.
     }
@@ -49,7 +51,9 @@ public class WptHookClient {
   public boolean isHookReady() {
     String response;
     try {
+      log.info("Sending /is_hook_ready query to the hook");
       response = getResponse(hookReadyUrl);
+      log.info("Done sending /is_hook_ready query to the hook");
     } catch(IOException e) {
       this.log.info("Can't connect to hook, probably not ready");
       return false;
@@ -61,11 +65,15 @@ public class WptHookClient {
   }
 
   public void notifyWebdriverDone() throws IOException {
+    log.info("Sending /event/webdriver_done command to the hook");
     getResponse(webdriverDoneUrl);
+    log.info("Done sending /event/webdriver_done command to the hook");
   }
 
-  public static String getResponse(URL url) throws IOException {
+  public String getResponse(URL url) throws IOException {
+    log.info("\t Before openConnection");
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    log.info("\t After openConnection");
     return CharStreams.toString(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
   }
 

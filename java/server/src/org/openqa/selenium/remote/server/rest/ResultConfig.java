@@ -31,6 +31,7 @@ import org.openqa.selenium.remote.server.DriverSessions;
 import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
 import org.openqa.selenium.remote.server.handler.DeleteSession;
+import org.openqa.selenium.remote.server.handler.NewSession;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
 import org.openqa.selenium.remote.server.log.LoggingManager;
 import org.openqa.selenium.remote.server.log.PerSessionLogHandler;
@@ -221,6 +222,15 @@ public class ResultConfig {
         log.fine("Done: " + handler);
       } else {
         log.info("Done: " + handler);
+      }
+
+      if (NEW_SESSION.equals(command.getName())) {
+        NewSession newSessionHandler = (NewSession) handler;
+        if (newSessionHandler.getCapabilities().is(WPT_LOCK_STEP)) {
+          // We just created the browser. Wait until the hook tells us that the browser is ready
+          // to interact.
+          wptHookClient.waitUntilHookReady();
+        }
       }
     } catch (UnreachableBrowserException e) {
       throwUpIfSessionTerminated(sessionId);
