@@ -40,9 +40,9 @@ public class WptHookClient {
 
   public void notifyNextWebdriverAction() {
     try {
-      log.info("Sending /event/webdriver_done command to the hook");
+      log.info("Sending /event/next_webdriver_action command to the hook");
       getResponse(nextActionUrl);
-      log.info("Done sending /event/webdriver_done command to the hook");
+      log.info("Done sending /event/next_webdriver_action command to the hook");
     } catch (Exception e) {
       // ignore.
     }
@@ -74,20 +74,27 @@ public class WptHookClient {
     log.info("\t Before openConnection");
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     log.info("\t After openConnection");
-    return CharStreams.toString(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+    String response = CharStreams.toString(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+    log.info("\t Got response: " + response);
+    return response;
   }
 
-  public void waitUntilHookReady() {
-    while (true) {
+  public void waitUntilHookReady(long timeoutMs) {
+    long waited = 0L;
+    while (waited < timeoutMs || timeoutMs == -1L) {
       log.info("Waiting for WptHook to be ready...");
       try {
         if (isHookReady()) {
           break;
         }
         Thread.sleep(100);
+        waited += 100L;
       } catch (InterruptedException e) {
         throw new RuntimeException("Wait interrupted. Exiting...");
       }
+    }
+    if (waited >= timeoutMs) {
+      log.info("WARN: Timed out waiting for the hook to be ready.");
     }
   }
 }

@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 
 public class ResultConfig {
 
+  private static final long MAX_WAIT_BEFORE_QUIT = 10000;
   private final String commandName;
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
@@ -200,10 +201,11 @@ public class ResultConfig {
             && sessions.get(sessionId).getCapabilities().is(WPT_LOCK_STEP)
             && !readOnlyCommands.contains(command.getName())
             && !NEW_SESSION.equals(command.getName())) {
-        wptHookClient.waitUntilHookReady();
         if (QUIT.equals(command.getName()) || CLOSE.equals(command.getName())) {
+          wptHookClient.waitUntilHookReady(MAX_WAIT_BEFORE_QUIT);
           wptHookClient.notifyWebdriverDone();
         } else {
+          wptHookClient.waitUntilHookReady(-1L);
           wptHookClient.notifyNextWebdriverAction();
         }
       }
@@ -229,7 +231,7 @@ public class ResultConfig {
         if (newSessionHandler.getCapabilities().is(WPT_LOCK_STEP)) {
           // We just created the browser. Wait until the hook tells us that the browser is ready
           // to interact.
-          wptHookClient.waitUntilHookReady();
+          wptHookClient.waitUntilHookReady(-1L);
         }
       }
     } catch (UnreachableBrowserException e) {
