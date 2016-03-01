@@ -34,6 +34,7 @@ import org.openqa.selenium.net.NetworkUtils;
 import org.openqa.selenium.remote.server.DefaultDriverSessions;
 import org.openqa.selenium.remote.server.DriverServlet;
 import org.openqa.selenium.remote.server.DriverSessions;
+import org.openqa.selenium.remote.server.SingletonDriverSessions;
 import org.openqa.selenium.remote.server.log.LoggingManager;
 import org.openqa.selenium.remote.server.log.LoggingOptions;
 import org.openqa.selenium.server.BrowserSessionFactory.BrowserSessionInfo;
@@ -364,7 +365,8 @@ public class SeleniumServer implements SslCertificateGenerator {
     server.addContext(context);
 
     // Both the selenium and webdriver contexts must be able to share sessions
-    DefaultDriverSessions webdriverSessions = new DefaultDriverSessions();
+    DefaultDriverSessions webdriverSessions = configuration.reuseBrowserSessions() ?
+            new SingletonDriverSessions() : new DefaultDriverSessions();
 
     server.addContext(createDriverContextWithSeleniumDriverResourceHandler(
         context, webdriverSessions));
