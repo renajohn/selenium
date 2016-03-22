@@ -201,6 +201,18 @@ public class RemoteControlConfigurationUnitTest {
   }
 
   @Test
+  public void testDumpScreenshotsCanBeSet() {
+    final File aDirectory = new File("\"A Directory Path\"");
+    configuration.setDumpScreenshots(aDirectory);
+    assertEquals(aDirectory, configuration.getDumpScreenshots());
+  }
+
+  @Test
+  public void testDumpScreenshotsIsNullByDefault() {
+    assertNull(configuration.getDumpScreenshots());
+  }
+
+  @Test
   public void testReuseBrowserSessionsIsFalseByDefault() {
     assertFalse(configuration.reuseBrowserSessions());
   }
@@ -314,6 +326,7 @@ public class RemoteControlConfigurationUnitTest {
     boolean browserSideLogEnabled = true;
 
     configuration.setFirefoxProfileTemplate(new File(fileName));
+    configuration.setDumpScreenshots(new File(fileName));
     configuration.setTimeoutInSeconds(timeOut);
     configuration.setHonorSystemProxy(honorSystemProxy);
     configuration.setDontInjectRegex(dontInjectRegex);

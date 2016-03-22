@@ -62,6 +62,8 @@ public class RemoteControlLauncher {
         "-userExtensions <file>: indicates a JavaScript file that will be loaded into selenium");
     printWrappedLine(INDENT,
         "-browserSessionReuse: stops re-initialization and spawning of the browser between tests");
+    printWrappedLine(INDENT,
+                     "-dumpScreenshots <dir>: dump all captured screenshots in the provided directory.");
     printWrappedLine(
         INDENT,
         "-avoidProxy: By default, we proxy every browser request; set this flag to make the browser use our proxy only for URLs containing '/selenium-server'");
@@ -148,6 +150,23 @@ public class RemoteControlLauncher {
         configuration.setSingleWindow(!true);
       } else if ("-singleWindow".equalsIgnoreCase(arg)) {
         configuration.setSingleWindow(!false);
+      } else if ("-dumpScreenshots".equalsIgnoreCase(arg)) {
+        File screenshotLocation = new File(getArg(args, ++i));
+        if (!screenshotLocation.exists()) {
+            try {
+                screenshotLocation.mkdirs();
+            } catch (Exception e){
+                System.err.println("Specified dump screenshot location failed to be created: " +
+                        screenshotLocation);
+                System.exit(1);
+            }
+        }
+        if (!screenshotLocation.isDirectory()) {
+          System.err.println("Specified dump screenshot location is not a directory: " +
+                             screenshotLocation);
+          System.exit(1);
+        }
+        configuration.setDumpScreenshots(screenshotLocation);
       } else if ("-profilesLocation".equalsIgnoreCase(arg)) {
         File profilesLocation = new File(getArg(args, ++i));
         if (!profilesLocation.exists()) {
