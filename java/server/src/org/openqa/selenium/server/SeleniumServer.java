@@ -789,6 +789,11 @@ public class SeleniumServer implements SslCertificateGenerator {
     if (configuration.getProxyInjectionModeArg()) {
       LOGGER.info("The selenium server will execute in proxyInjection mode.");
     }
+    if (configuration.getDumpScreenshots() != null) {
+      LOGGER.info(
+        "The selenium server will dump all screenshots to " +
+          configuration.getDumpScreenshots().toString() + ".");
+    }
     if (configuration.reuseBrowserSessions()) {
       LOGGER.info("Will recycle browser sessions when possible.");
     }

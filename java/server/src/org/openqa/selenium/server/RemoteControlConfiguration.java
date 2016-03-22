@@ -82,11 +82,13 @@ public class RemoteControlConfiguration {
   private int jettyThreads = 512;
   private SslCertificateGenerator sslCertGenerator;
   private boolean singleWindow;
+  private File dumpScreenshots;
 
 
   public RemoteControlConfiguration() {
     this.port = getDefaultPort();
     this.profilesLocation = null;
+    this.dumpScreenshots = null;
     this.proxyInjectionModeArg = false;
     this.portDriversShouldContact = USE_SAME_PORT;
     this.timeoutInSeconds = DEFAULT_TIMEOUT_IN_SECONDS;
@@ -119,6 +121,15 @@ public class RemoteControlConfiguration {
 
   public void setProfilesLocation(File profilesLocation) {
     this.profilesLocation = profilesLocation;
+  }
+
+  public File getDumpScreenshots() {
+    return dumpScreenshots;
+  }
+
+  public void setDumpScreenshots(File dumpScreenshots) {
+    this.dumpScreenshots = dumpScreenshots;
+    System.setProperty("dumpScreenshots", dumpScreenshots.toString());
   }
 
   public void setProxyInjectionModeArg(boolean proxyInjectionModeArg) {
