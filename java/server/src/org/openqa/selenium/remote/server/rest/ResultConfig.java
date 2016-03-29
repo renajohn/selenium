@@ -20,7 +20,9 @@ package org.openqa.selenium.remote.server.rest;
 import static org.openqa.selenium.remote.CapabilityType.WPT_LOCK_STEP;
 import static org.openqa.selenium.remote.DriverCommand.*;
 
-import com.appdynamics.wpt.WptHookClient;
+import com.appdynamics.wpt.HttpRequestException;
+import com.appdynamics.wpt.SATaskerClient;
+import com.appdynamics.wpt.SyntheticTaskerClient;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -49,7 +51,7 @@ import java.util.logging.Logger;
 
 public class ResultConfig {
 
-  private static final long MAX_WAIT_BEFORE_QUIT = 10000;
+  private static final long BROWSER_READY_MAX_WAIT = 10000;
   private final String commandName;
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
@@ -129,7 +131,7 @@ public class ResultConfig {
     add(GET_NETWORK_CONNECTION);
   }};
   // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
-  private static WptHookClient wptHookClient;
+  private static SyntheticTaskerClient synthTaskerClient;
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -143,13 +145,10 @@ public class ResultConfig {
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
 
-    if (wptHookClient == null) {
-      String hookEndPoint = System.getProperty("hookEndPoint", "http://localhost:8888");
-      try {
-        wptHookClient = new WptHookClient(hookEndPoint, log);
-      } catch (MalformedURLException e) {
-        throw new RuntimeException("Failed to initialize WptHookClient");
-      }
+    if (synthTaskerClient == null) {
+      String taskerUrl = System.getProperty("webdriver.synthetic.tasker.url",
+                                               "http://localhost:8888");
+      synthTaskerClient = new SyntheticTaskerClient(taskerUrl, log);
     }
   }
 
@@ -197,18 +196,7 @@ public class ResultConfig {
         log.info(String.format("Executing: %s)", handler));
       }
 
-      if (sessionId != null
-            && sessions.get(sessionId).getCapabilities().is(WPT_LOCK_STEP)
-            && !readOnlyCommands.contains(command.getName())
-            && !NEW_SESSION.equals(command.getName())) {
-        if (QUIT.equals(command.getName()) || CLOSE.equals(command.getName())) {
-          wptHookClient.waitUntilHookReady(MAX_WAIT_BEFORE_QUIT);
-          wptHookClient.notifyWebdriverDone();
-        } else {
-          wptHookClient.waitUntilHookReady(-1L);
-          wptHookClient.notifyNextWebdriverAction();
-        }
-      }
+      reportActionAndWaitForBrowserReady(sessionId, command);
 
       Object value = handler.handle();
 
@@ -229,9 +217,9 @@ public class ResultConfig {
       if (NEW_SESSION.equals(command.getName())) {
         NewSession newSessionHandler = (NewSession) handler;
         if (newSessionHandler.getCapabilities().is(WPT_LOCK_STEP)) {
-          // We just created the browser. Wait until the hook tells us that the browser is ready
+          // We just created the browser. Wait until the tasker tells us that the browser is ready
           // to interact.
-          wptHookClient.waitUntilHookReady(-1L);
+          synthTaskerClient.waitForBrowserReady(-1L);
         }
       }
     } catch (UnreachableBrowserException e) {
@@ -262,6 +250,24 @@ public class ResultConfig {
       sessions.deleteSession(sessionId);
     }
     return response;
+  }
+
+  private void reportActionAndWaitForBrowserReady(SessionId sessionId, Command command)
+    throws HttpRequestException {
+    boolean usingLockStep =
+      sessionId != null && sessions.get(sessionId).getCapabilities().is(WPT_LOCK_STEP);
+
+    if (usingLockStep && !NEW_SESSION.equals(command.getName())
+          && !readOnlyCommands.contains(command.getName())) {
+      // Wait for the browser for only invasive commands.
+      if (QUIT.equals(command.getName()) || CLOSE.equals(command.getName())) {
+        synthTaskerClient.waitForBrowserReady(BROWSER_READY_MAX_WAIT);
+        synthTaskerClient.submitWebDriverDoneAction(command);
+      } else {
+        synthTaskerClient.waitForBrowserReady(-1);
+        synthTaskerClient.submitWebDriverNextAction(command);
+      }
+    }
   }
 
   private void throwUpIfSessionTerminated(SessionId sessId) throws SessionNotFoundException {
