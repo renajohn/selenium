@@ -74,6 +74,7 @@ import org.openqa.selenium.remote.server.handler.GetElementSize;
 import org.openqa.selenium.remote.server.handler.GetElementText;
 import org.openqa.selenium.remote.server.handler.GetLogHandler;
 import org.openqa.selenium.remote.server.handler.GetPageSource;
+import org.openqa.selenium.remote.server.handler.GetRemoteDriverUrl;
 import org.openqa.selenium.remote.server.handler.GetScreenOrientation;
 import org.openqa.selenium.remote.server.handler.GetSessionCapabilities;
 import org.openqa.selenium.remote.server.handler.GetSessionLogsHandler;
@@ -372,5 +373,7 @@ public class JsonHttpCommandHandler {
     addNewMapping("getWindowSize", GetWindowSize.class);
     addNewMapping("setWindowSize", SetWindowSize.class);
     addNewMapping("maximizeWindow", MaximizeWindow.class);
+
+    addNewMapping(GET_REMOTE_DRIVER_URL, GetRemoteDriverUrl.class);
   }
 }

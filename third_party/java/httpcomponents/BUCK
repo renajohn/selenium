@@ -10,6 +10,7 @@ prebuilt_jar(
     '//third_party/java/commons-logging:commons-logging'
   ],
   visibility = [
+    '//java/server/src/com/appdynamics/webhook:webhook',
     '//java/client/src/org/openqa/selenium/remote:remote-lib',
     '//java/client/test/...',
     '//java/server/src/org/openqa/grid:grid',

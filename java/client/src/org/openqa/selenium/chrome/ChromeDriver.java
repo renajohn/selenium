@@ -20,6 +20,7 @@ package org.openqa.selenium.chrome;
 import com.google.common.collect.ImmutableMap;
 
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.html5.LocalStorage;

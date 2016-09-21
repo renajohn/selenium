@@ -70,7 +70,7 @@ public class DriverService {
 
   private final String executable;
   private final ImmutableList<String> args;
-  private final ImmutableMap<String, String> environment;
+  private ImmutableMap<String, String> environment;
   private OutputStream outputStream = System.err;
 
   /**
@@ -155,6 +155,11 @@ public class DriverService {
     } finally {
       lock.unlock();
     }
+  }
+
+  public DriverService withEnvironment(ImmutableMap<String, String> environment) {
+    this.environment = environment;
+    return this;
   }
 
   /**

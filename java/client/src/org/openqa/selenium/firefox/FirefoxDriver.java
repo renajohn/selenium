@@ -17,6 +17,7 @@
 
 package org.openqa.selenium.firefox;
 
+import static org.openqa.selenium.AppdynamicsCapability.extractFrom;
 import static org.openqa.selenium.firefox.FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE;
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
 
@@ -129,7 +130,10 @@ public class FirefoxDriver extends RemoteWebDriver {
   }
 
   public FirefoxDriver(GeckoDriverService service, FirefoxOptions options) {
-    super(new DriverCommandExecutor(service), dropCapabilities(options));
+    super(
+        new DriverCommandExecutor(service.withEnvironment(extractFrom(options).getEnvironment())),
+        dropCapabilities(options)
+    );
   }
 
   public FirefoxDriver(XpiDriverService service, FirefoxOptions options) {
@@ -154,7 +158,7 @@ public class FirefoxDriver extends RemoteWebDriver {
       builder = new GeckoDriverService.Builder()
           .usingFirefoxBinary(options.getBinary());
     }
-
+    builder.withEnvironment(extractFrom(options).getEnvironment());
     return new DriverCommandExecutor(builder.build());
   }
 

@@ -142,9 +142,17 @@ public class SeleniumServer implements GridNodeServer {
                                String.valueOf(configuration.timeout));
     }
 
-    driverSessions = new DefaultDriverSessions(
-        new DefaultDriverFactory(Platform.getCurrent()),
-        TimeUnit.SECONDS.toMillis(inactiveSessionTimeoutSeconds));
+    if (configuration.reuseBrowserSessions) {
+      driverSessions = new SingletonDriverSessions(
+          new DefaultDriverFactory(Platform.getCurrent()),
+          TimeUnit.SECONDS.toMillis(inactiveSessionTimeoutSeconds)
+      );
+    } else {
+      driverSessions = new DefaultDriverSessions(
+          new DefaultDriverFactory(Platform.getCurrent()),
+          TimeUnit.SECONDS.toMillis(inactiveSessionTimeoutSeconds));
+    }
+
     handler.setAttribute(DriverServlet.SESSIONS_KEY, driverSessions);
 
     NewSessionPipeline pipeline = createPipeline(configuration);
