@@ -109,7 +109,8 @@ public class SeleniumServer implements GridNodeServer {
 
     ServletContextHandler handler = new ServletContextHandler();
 
-    driverSessions = new DefaultDriverSessions();
+    driverSessions = configuration.reuseBrowserSessions ?
+                     new SingletonDriverSessions() : new DefaultDriverSessions();
     handler.setAttribute(DriverServlet.SESSIONS_KEY, driverSessions);
     handler.setContextPath("/");
     handler.addServlet(DriverServlet.class, "/wd/hub/*");

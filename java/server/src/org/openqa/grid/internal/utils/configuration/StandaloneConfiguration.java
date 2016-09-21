@@ -89,6 +89,12 @@ public class StandaloneConfiguration {
 
   @Expose( serialize = false )
   @Parameter(
+    names = "-browserSessionReuse",
+    description = "Don't create a new context. Treat session as a singleton."
+  )
+  public boolean reuseBrowserSessions;
+
+  @Parameter(
     names = "-captureLogsOnQuit",
     description = "DO NOT USE: Provided for compatibility with 2.0",
     hidden = true

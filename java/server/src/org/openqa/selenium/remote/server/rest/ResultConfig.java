@@ -18,8 +18,13 @@
 package org.openqa.selenium.remote.server.rest;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
+import com.appdynamics.webhook.CommandWebhookClient;
+import com.appdynamics.webhook.HttpRequestException;
+
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.Command;
@@ -35,6 +40,7 @@ import org.openqa.selenium.remote.server.handler.DeleteSession;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
 import org.openqa.selenium.remote.server.log.LoggingManager;
 import org.openqa.selenium.remote.server.log.PerSessionLogHandler;
+import java.util.regex.Pattern;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -43,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 public class ResultConfig {
 
@@ -50,6 +57,12 @@ public class ResultConfig {
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
   private final Logger log;
+  // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
+  private static CommandWebhookClient commandWebhookClient;
+  private static final Pattern sendKeysPattern =
+    Pattern.compile("(.*)(send keys:).*(])", java.util.regex.Pattern.CASE_INSENSITIVE);
+  private static final Pattern credentialsPattern =
+    Pattern.compile("(.*)(https?://).*@(.*$)", java.util.regex.Pattern.CASE_INSENSITIVE);
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -62,6 +75,10 @@ public class ResultConfig {
     this.log = log;
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
+
+    if (commandWebhookClient == null) {
+      commandWebhookClient = new CommandWebhookClient(log);
+    }
   }
 
 
@@ -103,12 +120,15 @@ public class ResultConfig {
       throwUpIfSessionTerminated(sessionId);
 
       if (DriverCommand.STATUS.equals(command.getName())) {
-        log.fine(String.format("Executing: %s)", handler));
+        log.fine(removeCredentials("Executing: " + handler));
       } else {
-        log.info(String.format("Executing: %s)", handler));
+        log.info(removeCredentials("Executing: " + handler));
       }
 
+      reportCommand(sessionId, command);
+
       Object value = handler.handle();
+
       if (value instanceof Response) {
         response = (Response) value;
       } else {
@@ -118,10 +138,11 @@ public class ResultConfig {
       }
 
       if (DriverCommand.STATUS.equals(command.getName())) {
-        log.fine("Done: " + handler);
+        log.fine(removeCredentials("Done: " + handler));
       } else {
-        log.info("Done: " + handler);
+        log.info(removeCredentials("Done: " + handler));
       }
+
     } catch (UnreachableBrowserException e) {
       throwUpIfSessionTerminated(sessionId);
       return Responses.failure(sessionId, e);
@@ -150,6 +171,44 @@ public class ResultConfig {
       sessions.deleteSession(sessionId);
     }
     return response;
+  }
+
+  private String removeCredentials(String command) {
+    if (Strings.isNullOrEmpty(command)) {
+      return command;
+    }
+
+    if (command.contains("send keys")) {
+      Matcher matcher = sendKeysPattern.matcher(command);
+
+      if (matcher.matches()) {
+        return matcher.group(1) + matcher.group(2) + " REDACTED" + matcher.group(3);
+      }
+    } else {
+      Matcher matcher = credentialsPattern.matcher(command);
+
+      if (matcher.matches()) {
+        return matcher.group(1) + matcher.group(2) + matcher.group(3);
+      }
+    }
+    return command;
+  }
+
+  private void reportCommand(SessionId sessionId, Command command)
+    throws HttpRequestException {
+    if (sessionId == null) {
+      return;
+    }
+
+    AppdynamicsCapability appdynamicsCapability = AppdynamicsCapability.extractFrom(
+      sessions.get(sessionId).getCapabilities());
+    String webhookUrl = appdynamicsCapability.getCommandWebhook();
+    if (webhookUrl == null) {
+      log.warning("Webhook capability is incorrect. Expected an end point.");
+      return;
+    }
+
+    commandWebhookClient.submitWebDriverCommand(webhookUrl, command);
   }
 
   private void throwUpIfSessionTerminated(SessionId sessId) throws NoSuchSessionException {
