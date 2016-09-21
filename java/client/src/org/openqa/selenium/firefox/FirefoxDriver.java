@@ -112,6 +112,7 @@ public class FirefoxDriver extends RemoteWebDriver implements Killable {
   public static final String BINARY = "firefox_binary";
   public static final String PROFILE = "firefox_profile";
   public static final String MARIONETTE = "marionette";
+  public static final String PROFILE_DIR = "firefox_profile_dir";
 
   // For now, only enable native events on Windows
   public static final boolean DEFAULT_ENABLE_NATIVE_EVENTS = Platform.getCurrent().is(WINDOWS);
@@ -165,6 +166,18 @@ public class FirefoxDriver extends RemoteWebDriver implements Killable {
           throw new WebDriverException(e);
         }
       }
+    }
+    else {
+      if (desiredCapabilities != null && desiredCapabilities.getCapability(PROFILE_DIR) != null) {
+        raw = desiredCapabilities.getCapability(PROFILE_DIR);
+      }
+      if (requiredCapabilities != null && requiredCapabilities.getCapability(PROFILE_DIR) != null) {
+        raw = requiredCapabilities.getCapability(PROFILE_DIR);
+      }
+      if (raw instanceof String) {
+        profile = new FirefoxProfile(new File((String) raw));
+      }
+
     }
     profile = getProfile(profile);
 

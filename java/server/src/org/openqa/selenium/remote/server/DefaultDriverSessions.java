@@ -41,7 +41,7 @@ public class DefaultDriverSessions implements DriverSessions {
   private final DriverFactory factory;
   private final Clock clock;
 
-  private final Map<SessionId, Session> sessionIdToDriver =
+  protected final Map<SessionId, Session> sessionIdToDriver =
       new ConcurrentHashMap<>();
 
   private static List<DriverProvider> defaultDriverProviders =

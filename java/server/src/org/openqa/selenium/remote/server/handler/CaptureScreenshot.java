@@ -17,27 +17,62 @@
 
 package org.openqa.selenium.remote.server.handler;
 
-import static org.openqa.selenium.OutputType.BASE64;
+import static org.openqa.selenium.OutputType.BYTES;
+
+import com.google.common.io.Files;
 
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.server.Session;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Base64;
 
 public class CaptureScreenshot extends WebDriverHandler<String> {
 
+  private File dumpDir;
+  private final Base64.Encoder encoder = Base64.getEncoder();
+
   public CaptureScreenshot(Session session) {
     super(session);
+
+    String path = System.getProperty("webdriver.saveScreenshots");
+    if (path != null && !path.isEmpty()) {
+      dumpDir = new File(path);
+      dumpDir.mkdirs();
+    }
   }
 
   @Override
   public String call() throws Exception {
     WebDriver driver = getUnwrappedDriver();
 
-    return ((TakesScreenshot) driver).getScreenshotAs(BASE64);
+    byte[] png = ((TakesScreenshot) driver).getScreenshotAs(BYTES);
+
+    if (dumpDir != null) {
+      save(dumpDir, png);
+    }
+
+    return encoder.encodeToString(png);
   }
 
   @Override
   public String toString() {
     return "[take screenshot]";
+  }
+
+  private File save(File folder, byte[] data) {
+    try {
+      String filename = System.currentTimeMillis() + "_screenshot.png";
+
+      File file = new File(folder, filename);
+      Files.write(data, file);
+
+      return file;
+    } catch (IOException e) {
+      throw new WebDriverException(e);
+    }
   }
 }

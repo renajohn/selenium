@@ -17,8 +17,70 @@
 
 package org.openqa.selenium.remote.server.rest;
 
+import static org.openqa.selenium.remote.CapabilityType.WPT_LOCK_STEP;
+import static org.openqa.selenium.remote.DriverCommand.CLOSE;
+import static org.openqa.selenium.remote.DriverCommand.ELEMENT_EQUALS;
+import static org.openqa.selenium.remote.DriverCommand.ELEMENT_SCREENSHOT;
+import static org.openqa.selenium.remote.DriverCommand.FIND_CHILD_ELEMENT;
+import static org.openqa.selenium.remote.DriverCommand.FIND_CHILD_ELEMENTS;
+import static org.openqa.selenium.remote.DriverCommand.FIND_ELEMENT;
+import static org.openqa.selenium.remote.DriverCommand.FIND_ELEMENTS;
+import static org.openqa.selenium.remote.DriverCommand.GET_ACTIVE_ELEMENT;
+import static org.openqa.selenium.remote.DriverCommand.GET_ALERT_TEXT;
+import static org.openqa.selenium.remote.DriverCommand.GET_ALL_COOKIES;
+import static org.openqa.selenium.remote.DriverCommand.GET_ALL_SESSIONS;
+import static org.openqa.selenium.remote.DriverCommand.GET_APP_CACHE;
+import static org.openqa.selenium.remote.DriverCommand.GET_APP_CACHE_STATUS;
+import static org.openqa.selenium.remote.DriverCommand.GET_AVAILABLE_LOG_TYPES;
+import static org.openqa.selenium.remote.DriverCommand.GET_CAPABILITIES;
+import static org.openqa.selenium.remote.DriverCommand.GET_CONTEXT_HANDLES;
+import static org.openqa.selenium.remote.DriverCommand.GET_CURRENT_CONTEXT_HANDLE;
+import static org.openqa.selenium.remote.DriverCommand.GET_CURRENT_URL;
+import static org.openqa.selenium.remote.DriverCommand.GET_CURRENT_WINDOW_HANDLE;
+import static org.openqa.selenium.remote.DriverCommand.GET_CURRENT_WINDOW_POSITION;
+import static org.openqa.selenium.remote.DriverCommand.GET_CURRENT_WINDOW_SIZE;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_ATTRIBUTE;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_LOCATION;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_SIZE;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_TAG_NAME;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_TEXT;
+import static org.openqa.selenium.remote.DriverCommand.GET_ELEMENT_VALUE_OF_CSS_PROPERTY;
+import static org.openqa.selenium.remote.DriverCommand.GET_LOCAL_STORAGE_ITEM;
+import static org.openqa.selenium.remote.DriverCommand.GET_LOCAL_STORAGE_KEYS;
+import static org.openqa.selenium.remote.DriverCommand.GET_LOCAL_STORAGE_SIZE;
+import static org.openqa.selenium.remote.DriverCommand.GET_LOCATION;
+import static org.openqa.selenium.remote.DriverCommand.GET_LOG;
+import static org.openqa.selenium.remote.DriverCommand.GET_NETWORK_CONNECTION;
+import static org.openqa.selenium.remote.DriverCommand.GET_PAGE_SOURCE;
+import static org.openqa.selenium.remote.DriverCommand.GET_SCREEN_ORIENTATION;
+import static org.openqa.selenium.remote.DriverCommand.GET_SCREEN_ROTATION;
+import static org.openqa.selenium.remote.DriverCommand.GET_SESSION_LOGS;
+import static org.openqa.selenium.remote.DriverCommand.GET_SESSION_STORAGE_ITEM;
+import static org.openqa.selenium.remote.DriverCommand.GET_SESSION_STORAGE_KEYS;
+import static org.openqa.selenium.remote.DriverCommand.GET_SESSION_STORAGE_SIZE;
+import static org.openqa.selenium.remote.DriverCommand.GET_TITLE;
+import static org.openqa.selenium.remote.DriverCommand.GET_WINDOW_HANDLES;
+import static org.openqa.selenium.remote.DriverCommand.IME_GET_ACTIVE_ENGINE;
+import static org.openqa.selenium.remote.DriverCommand.IME_GET_AVAILABLE_ENGINES;
+import static org.openqa.selenium.remote.DriverCommand.IME_IS_ACTIVATED;
+import static org.openqa.selenium.remote.DriverCommand.IMPLICITLY_WAIT;
+import static org.openqa.selenium.remote.DriverCommand.IS_BROWSER_ONLINE;
+import static org.openqa.selenium.remote.DriverCommand.IS_ELEMENT_DISPLAYED;
+import static org.openqa.selenium.remote.DriverCommand.IS_ELEMENT_ENABLED;
+import static org.openqa.selenium.remote.DriverCommand.IS_ELEMENT_SELECTED;
+import static org.openqa.selenium.remote.DriverCommand.NEW_SESSION;
+import static org.openqa.selenium.remote.DriverCommand.QUIT;
+import static org.openqa.selenium.remote.DriverCommand.SCREENSHOT;
+import static org.openqa.selenium.remote.DriverCommand.SET_SCRIPT_TIMEOUT;
+import static org.openqa.selenium.remote.DriverCommand.SET_TIMEOUT;
+import static org.openqa.selenium.remote.DriverCommand.STATUS;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+
+import com.appdynamics.wpt.HttpRequestException;
+import com.appdynamics.wpt.SyntheticTaskerClient;
 
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.WebDriverException;
@@ -32,24 +94,107 @@ import org.openqa.selenium.remote.server.DriverSessions;
 import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
 import org.openqa.selenium.remote.server.handler.DeleteSession;
+import org.openqa.selenium.remote.server.handler.NewSession;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
 import org.openqa.selenium.remote.server.log.LoggingManager;
 import org.openqa.selenium.remote.server.log.PerSessionLogHandler;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ResultConfig {
 
+  private static final long BROWSER_READY_MAX_WAIT = 10000;
   private final String commandName;
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
   private final Logger log;
+  private final Set<String> readOnlyCommands = new HashSet<String>() {{
+    add(GET_ALL_SESSIONS);
+    add(GET_CAPABILITIES);
+
+    add(STATUS);
+
+    add(GET_ALL_COOKIES);
+
+    add(FIND_ELEMENT);
+    add(FIND_ELEMENTS);
+    add(FIND_CHILD_ELEMENT);
+    add(FIND_CHILD_ELEMENTS);
+
+    add(GET_CURRENT_WINDOW_HANDLE);
+    add(GET_WINDOW_HANDLES);
+
+    add(GET_CURRENT_CONTEXT_HANDLE);
+    add(GET_CONTEXT_HANDLES);
+
+    add(GET_ACTIVE_ELEMENT);
+
+    add(GET_CURRENT_URL);
+    add(GET_PAGE_SOURCE);
+    add(GET_TITLE);
+
+    add(GET_ELEMENT_TEXT);
+    add(GET_ELEMENT_TAG_NAME);
+    add(IS_ELEMENT_SELECTED);
+    add(IS_ELEMENT_ENABLED);
+    add(IS_ELEMENT_DISPLAYED);
+    add(GET_ELEMENT_LOCATION);
+    add(GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW);
+    add(GET_ELEMENT_SIZE);
+    add(GET_ELEMENT_ATTRIBUTE);
+    add(GET_ELEMENT_VALUE_OF_CSS_PROPERTY);
+    add(ELEMENT_EQUALS);
+
+    add(SCREENSHOT);
+    add(ELEMENT_SCREENSHOT);
+
+    add(GET_ALERT_TEXT);
+
+    add(SET_TIMEOUT);
+    add(IMPLICITLY_WAIT);
+    add(SET_SCRIPT_TIMEOUT);
+
+    add(GET_LOCATION);
+    add(GET_APP_CACHE);
+    add(GET_APP_CACHE_STATUS);
+    add(IS_BROWSER_ONLINE);
+
+    add(GET_LOCAL_STORAGE_ITEM);
+    add(GET_LOCAL_STORAGE_KEYS);
+    add(GET_LOCAL_STORAGE_SIZE);
+
+    add(GET_SESSION_STORAGE_ITEM);
+    add(GET_SESSION_STORAGE_KEYS);
+    add(GET_SESSION_STORAGE_SIZE);
+
+    add(GET_SCREEN_ORIENTATION);
+
+    add(IME_GET_AVAILABLE_ENGINES);
+    add(IME_GET_ACTIVE_ENGINE);
+    add(IME_IS_ACTIVATED);
+
+    add(GET_SCREEN_ORIENTATION);
+    add(GET_SCREEN_ROTATION);
+    add(GET_CURRENT_WINDOW_SIZE);
+    add(GET_CURRENT_WINDOW_POSITION);
+    add(GET_CURRENT_WINDOW_HANDLE);
+
+    add(GET_AVAILABLE_LOG_TYPES);
+    add(GET_LOG);
+    add(GET_SESSION_LOGS);
+
+    add(GET_NETWORK_CONNECTION);
+  }};
+  // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
+  private static SyntheticTaskerClient synthTaskerClient;
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -62,6 +207,12 @@ public class ResultConfig {
     this.log = log;
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
+
+    if (synthTaskerClient == null) {
+      String taskerUrl = System.getProperty("webdriver.synthetic.tasker.url",
+                                               "http://localhost:8888");
+      synthTaskerClient = new SyntheticTaskerClient(taskerUrl, log);
+    }
   }
 
 
@@ -108,7 +259,10 @@ public class ResultConfig {
         log.info(String.format("Executing: %s)", handler));
       }
 
+      reportActionAndWaitForBrowserReady(sessionId, command);
+
       Object value = handler.handle();
+
       if (value instanceof Response) {
         response = (Response) value;
       } else {
@@ -121,6 +275,15 @@ public class ResultConfig {
         log.fine("Done: " + handler);
       } else {
         log.info("Done: " + handler);
+      }
+
+      if (NEW_SESSION.equals(command.getName())) {
+        NewSession newSessionHandler = (NewSession) handler;
+        if (newSessionHandler.getCapabilities().is(WPT_LOCK_STEP)) {
+          // We just created the browser. Wait until the tasker tells us that the browser is ready
+          // to interact.
+          synthTaskerClient.waitForBrowserReady(-1L);
+        }
       }
     } catch (UnreachableBrowserException e) {
       throwUpIfSessionTerminated(sessionId);
@@ -150,6 +313,24 @@ public class ResultConfig {
       sessions.deleteSession(sessionId);
     }
     return response;
+  }
+
+  private void reportActionAndWaitForBrowserReady(SessionId sessionId, Command command)
+    throws HttpRequestException {
+    boolean usingLockStep =
+      sessionId != null && sessions.get(sessionId).getCapabilities().is(WPT_LOCK_STEP);
+
+    if (usingLockStep && !NEW_SESSION.equals(command.getName())
+          && !readOnlyCommands.contains(command.getName())) {
+      // Wait for the browser for only invasive commands.
+      if (QUIT.equals(command.getName()) || CLOSE.equals(command.getName())) {
+        synthTaskerClient.waitForBrowserReady(BROWSER_READY_MAX_WAIT);
+        synthTaskerClient.submitWebDriverDoneAction(command);
+      } else {
+        synthTaskerClient.waitForBrowserReady(-1);
+        synthTaskerClient.submitWebDriverNextAction(command);
+      }
+    }
   }
 
   private void throwUpIfSessionTerminated(SessionId sessId) throws NoSuchSessionException {
