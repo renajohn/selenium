@@ -17,8 +17,7 @@
 
 package org.openqa.selenium.remote.server.rest;
 
-import static org.openqa.selenium.remote.CapabilityType.WPT_LOCK_STEP;
-import static org.openqa.selenium.remote.DriverCommand.CLOSE;
+import static org.openqa.selenium.remote.CapabilityType.COMMAND_WEBHOOK;
 import static org.openqa.selenium.remote.DriverCommand.ELEMENT_EQUALS;
 import static org.openqa.selenium.remote.DriverCommand.ELEMENT_SCREENSHOT;
 import static org.openqa.selenium.remote.DriverCommand.FIND_CHILD_ELEMENT;
@@ -70,7 +69,6 @@ import static org.openqa.selenium.remote.DriverCommand.IS_ELEMENT_DISPLAYED;
 import static org.openqa.selenium.remote.DriverCommand.IS_ELEMENT_ENABLED;
 import static org.openqa.selenium.remote.DriverCommand.IS_ELEMENT_SELECTED;
 import static org.openqa.selenium.remote.DriverCommand.NEW_SESSION;
-import static org.openqa.selenium.remote.DriverCommand.QUIT;
 import static org.openqa.selenium.remote.DriverCommand.SCREENSHOT;
 import static org.openqa.selenium.remote.DriverCommand.SET_SCRIPT_TIMEOUT;
 import static org.openqa.selenium.remote.DriverCommand.SET_TIMEOUT;
@@ -79,8 +77,8 @@ import static org.openqa.selenium.remote.DriverCommand.STATUS;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
-import com.appdynamics.wpt.HttpRequestException;
-import com.appdynamics.wpt.SyntheticTaskerClient;
+import com.appdynamics.webhook.CommandWebhookClient;
+import com.appdynamics.webhook.HttpRequestException;
 
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.WebDriverException;
@@ -94,7 +92,6 @@ import org.openqa.selenium.remote.server.DriverSessions;
 import org.openqa.selenium.remote.server.JsonParametersAware;
 import org.openqa.selenium.remote.server.Session;
 import org.openqa.selenium.remote.server.handler.DeleteSession;
-import org.openqa.selenium.remote.server.handler.NewSession;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
 import org.openqa.selenium.remote.server.log.LoggingManager;
 import org.openqa.selenium.remote.server.log.PerSessionLogHandler;
@@ -111,7 +108,6 @@ import java.util.logging.Logger;
 
 public class ResultConfig {
 
-  private static final long BROWSER_READY_MAX_WAIT = 10000;
   private final String commandName;
   private final HandlerFactory handlerFactory;
   private final DriverSessions sessions;
@@ -194,7 +190,7 @@ public class ResultConfig {
     add(GET_NETWORK_CONNECTION);
   }};
   // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
-  private static SyntheticTaskerClient synthTaskerClient;
+  private static CommandWebhookClient commandWebhookClient;
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -208,10 +204,8 @@ public class ResultConfig {
     this.sessions = sessions;
     this.handlerFactory = getHandlerFactory(handlerClazz);
 
-    if (synthTaskerClient == null) {
-      String taskerUrl = System.getProperty("webdriver.synthetic.tasker.url",
-                                               "http://localhost:8888");
-      synthTaskerClient = new SyntheticTaskerClient(taskerUrl, log);
+    if (commandWebhookClient == null) {
+      commandWebhookClient = new CommandWebhookClient(log);
     }
   }
 
@@ -259,7 +253,7 @@ public class ResultConfig {
         log.info(String.format("Executing: %s)", handler));
       }
 
-      reportActionAndWaitForBrowserReady(sessionId, command);
+      reportCommand(sessionId, command);
 
       Object value = handler.handle();
 
@@ -277,14 +271,6 @@ public class ResultConfig {
         log.info("Done: " + handler);
       }
 
-      if (NEW_SESSION.equals(command.getName())) {
-        NewSession newSessionHandler = (NewSession) handler;
-        if (newSessionHandler.getCapabilities().is(WPT_LOCK_STEP)) {
-          // We just created the browser. Wait until the tasker tells us that the browser is ready
-          // to interact.
-          synthTaskerClient.waitForBrowserReady(-1L);
-        }
-      }
     } catch (UnreachableBrowserException e) {
       throwUpIfSessionTerminated(sessionId);
       return Responses.failure(sessionId, e);
@@ -315,21 +301,25 @@ public class ResultConfig {
     return response;
   }
 
-  private void reportActionAndWaitForBrowserReady(SessionId sessionId, Command command)
+  private void reportCommand(SessionId sessionId, Command command)
     throws HttpRequestException {
-    boolean usingLockStep =
-      sessionId != null && sessions.get(sessionId).getCapabilities().is(WPT_LOCK_STEP);
+    if (sessionId == null) {
+      return;
+    }
 
-    if (usingLockStep && !NEW_SESSION.equals(command.getName())
-          && !readOnlyCommands.contains(command.getName())) {
-      // Wait for the browser for only invasive commands.
-      if (QUIT.equals(command.getName()) || CLOSE.equals(command.getName())) {
-        synthTaskerClient.waitForBrowserReady(BROWSER_READY_MAX_WAIT);
-        synthTaskerClient.submitWebDriverDoneAction(command);
-      } else {
-        synthTaskerClient.waitForBrowserReady(-1);
-        synthTaskerClient.submitWebDriverNextAction(command);
-      }
+
+    Object raw = sessions.get(sessionId).getCapabilities().getCapability(COMMAND_WEBHOOK);
+    String webhookUrl;
+
+    if (raw instanceof String) {
+      webhookUrl = (String) raw;
+    } else {
+      log.warning("Webhook capability is incorrect. Expected an end point.");
+      return;
+    }
+
+    if (!NEW_SESSION.equals(command.getName()) && !readOnlyCommands.contains(command.getName())) {
+      commandWebhookClient.submitWebDriverCommand(webhookUrl, command);
     }
   }
 

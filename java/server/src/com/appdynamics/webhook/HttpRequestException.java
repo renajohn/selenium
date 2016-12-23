@@ -2,7 +2,7 @@
  * Copyright (c) AppDynamics Inc
  * All rights reserved
  */
-package com.appdynamics.wpt;
+package com.appdynamics.webhook;
 
 public class HttpRequestException extends Exception {
   private int statusCode = -1;

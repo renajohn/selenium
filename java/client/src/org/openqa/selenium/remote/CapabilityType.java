@@ -75,18 +75,13 @@ public interface CapabilityType {
   /**
    * AppDynamics extensions
    *
-   * Lock step execution is a mechanism used to ensure Web Page Test agent will have enough time to collect
-   * all performance measurements.
+   * This capability forwards all commands to a specified end point before executing them.
    *
-   * In a nutshell, with this capability enabled, the remote webdriver server polls the hook to
-   * know when it is safe to proceed with the next action. The hook makes sure all measurements are
-   * completed and persisted before giving the green flag.
-   *
-   * This capability afects the remote webdriver server, not the clients.
+   * This capability affects the remote webdriver server, not the clients.
    *
    * @author Renault John Lecoultre <renault.lecoultre@appdynamics.com>
-   * @since 7/1/15
-   * Copyright 2015 AppDynamics inc. All rights reserved
+   * @since 21/10/16
+   * Copyright 2016 AppDynamics inc. All rights reserved
    */
-  String WPT_LOCK_STEP = "wptLockStep";
+  String COMMAND_WEBHOOK = "commandWebhook";
 }
