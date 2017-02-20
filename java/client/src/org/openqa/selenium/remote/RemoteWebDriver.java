@@ -1029,6 +1029,10 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor,
     }
   }
 
+  public CommandExecutor getExecutor() {
+    return executor;
+  }
+
   public enum When {
     BEFORE,
     AFTER,
