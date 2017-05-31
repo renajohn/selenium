@@ -71,17 +71,4 @@ public interface CapabilityType {
     String PROXY_PAC = "proxy_pac";
     String ENSURING_CLEAN_SESSION = "ensureCleanSession";
   }
-
-  /**
-   * AppDynamics extensions
-   *
-   * This capability forwards all commands to a specified end point before executing them.
-   *
-   * This capability affects the remote webdriver server, not the clients.
-   *
-   * @author Renault John Lecoultre <renault.lecoultre@appdynamics.com>
-   * @since 21/10/16
-   * Copyright 2016 AppDynamics inc. All rights reserved
-   */
-  String COMMAND_WEBHOOK = "commandWebhook";
 }

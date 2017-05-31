@@ -20,6 +20,7 @@ package org.openqa.selenium.chrome;
 
 import com.google.common.collect.ImmutableMap;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.AppdynamicsCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.html5.LocalStorage;
@@ -171,7 +172,8 @@ public class ChromeDriver extends RemoteWebDriver
    * @param capabilities The capabilities required from the ChromeDriver.
    */
   public ChromeDriver(ChromeDriverService service, Capabilities capabilities) {
-    super(new ChromeDriverCommandExecutor(service), capabilities);
+    super(new ChromeDriverCommandExecutor(service.withEnvironment(
+      AppdynamicsCapabilities.extractFrom(capabilities).getK9Environment())), capabilities);
     locationContext = new RemoteLocationContext(getExecuteMethod());
     webStorage = new  RemoteWebStorage(getExecuteMethod());
     touchScreen = new RemoteTouchScreen(getExecuteMethod());
@@ -208,7 +210,7 @@ public class ChromeDriver extends RemoteWebDriver
   public TouchScreen getTouch() {
     return touchScreen;
   }
-  
+
   /**
    * Launches Chrome app specified by id.
    *
@@ -217,5 +219,5 @@ public class ChromeDriver extends RemoteWebDriver
   public void launchApp(String id) {
     execute(ChromeDriverCommand.LAUNCH_APP, ImmutableMap.of("id", id));
   }
-  
+
 }
