@@ -18,7 +18,7 @@
 package org.openqa.selenium.ie;
 
 import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.AppdynamicsCapabilities;
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriverException;
@@ -170,7 +170,7 @@ public class InternetExplorerDriver extends RemoteWebDriver {
     if (service == null) {
       service = setupService(capabilities, port);
     }
-    service.withEnvironment(AppdynamicsCapabilities.extractFrom(capabilities).getK9Environment());
+    service.withEnvironment(AppdynamicsCapability.extractFrom(capabilities).getK9Environment());
     run(service, capabilities);
   }
 

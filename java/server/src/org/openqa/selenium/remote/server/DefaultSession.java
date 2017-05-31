@@ -19,7 +19,7 @@ package org.openqa.selenium.remote.server;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.openqa.selenium.AppdynamicsCapabilities;
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.HasCapabilities;
 import org.openqa.selenium.JavascriptExecutor;
@@ -271,8 +271,8 @@ public class DefaultSession implements Session {
        * @since 7/1/15
        * Copyright 2015 AppDynamics inc. All rights reserved
        */
-      caps.setCapability(AppdynamicsCapabilities.APPDYNAMICS_CAPABILITIES,
-                         this.capabilities.getCapability(AppdynamicsCapabilities.APPDYNAMICS_CAPABILITIES));
+      caps.setCapability(AppdynamicsCapability.APPDYNAMICS_CAPABILITIES,
+                         this.capabilities.getCapability(AppdynamicsCapability.APPDYNAMICS_CAPABILITIES));
 
       return caps;
     }

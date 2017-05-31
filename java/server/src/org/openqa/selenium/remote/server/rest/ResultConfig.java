@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
 import com.appdynamics.webhook.CommandWebhookClient;
 import com.appdynamics.webhook.HttpRequestException;
 
-import org.openqa.selenium.AppdynamicsCapabilities;
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.Command;
@@ -172,7 +172,7 @@ public class ResultConfig {
       return;
     }
 
-    AppdynamicsCapabilities appdynamicsCapability = AppdynamicsCapabilities.extractFrom(
+    AppdynamicsCapability appdynamicsCapability = AppdynamicsCapability.extractFrom(
       sessions.get(sessionId).getCapabilities());
     String webhookUrl = appdynamicsCapability.getCommandWebhook();
     if (webhookUrl == null) {

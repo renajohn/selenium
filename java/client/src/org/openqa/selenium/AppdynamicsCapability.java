@@ -1,5 +1,6 @@
 package org.openqa.selenium;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
@@ -7,7 +8,7 @@ import java.util.Map;
 /**
  * Created by shashwat.srivastava on 5/30/17.
  */
-public class AppdynamicsCapabilities {
+public class AppdynamicsCapability {
   /**
    * AppDynamics extensions
    *
@@ -23,11 +24,11 @@ public class AppdynamicsCapabilities {
   /**
    * This capability sets the K9 output directory.
    */
-  public static String K9_OUTPUT_DIR = "outputDir";
+  public static String OUTPUT_DIR = "outputDir";
   /**
    * This capability sets the K9 test id
    */
-  public static String K9_TEST_ID = "testId";
+  public static String TEST_ID = "testId";
 
   private String outputDir;
   private String testID;
@@ -40,19 +41,19 @@ public class AppdynamicsCapabilities {
    */
   public static final String APPDYNAMICS_CAPABILITIES = "appdynamicsCapabilities";
 
-  public AppdynamicsCapabilities(Map<String, String> map) {
-    if (map.containsKey(K9_OUTPUT_DIR) && map.get(K9_OUTPUT_DIR) != null) {
-      this.outputDir = map.get(K9_OUTPUT_DIR);
+  public AppdynamicsCapability(Map<String, String> map) {
+    if ( map.containsKey(OUTPUT_DIR) && !Strings.isNullOrEmpty(map.get(OUTPUT_DIR))) {
+      this.outputDir = map.get(OUTPUT_DIR);
     }
-    if (map.containsKey(K9_TEST_ID) && map.get(K9_TEST_ID) != null) {
-      this.testID = map.get(K9_TEST_ID);
+    if (map.containsKey(TEST_ID) && !Strings.isNullOrEmpty(map.get(TEST_ID))) {
+      this.testID = map.get(TEST_ID);
     }
-    if (map.containsKey(COMMAND_WEBHOOK) && map.get(COMMAND_WEBHOOK) != null) {
+    if (map.containsKey(COMMAND_WEBHOOK) && !Strings.isNullOrEmpty(map.get(COMMAND_WEBHOOK))) {
       this.commandWebhook = map.get(COMMAND_WEBHOOK);
     }
   }
 
-  public AppdynamicsCapabilities() {
+  public AppdynamicsCapability() {
     this.commandWebhook = "http://localhost:8888/v1/webdriver/action";
   }
 
@@ -79,19 +80,19 @@ public class AppdynamicsCapabilities {
     return mapBuilder.build();
   }
 
-  public static AppdynamicsCapabilities extractFrom(Capabilities capabilities) {
-    Object rawK9Variables = capabilities.getCapability(APPDYNAMICS_CAPABILITIES);
-    AppdynamicsCapabilities appdynamicsCapabilities = new AppdynamicsCapabilities();
-    if (rawK9Variables != null) {
-      if (rawK9Variables instanceof AppdynamicsCapabilities) {
-        appdynamicsCapabilities = (AppdynamicsCapabilities) rawK9Variables;
-      } else if (rawK9Variables instanceof Map) {
-        appdynamicsCapabilities = new AppdynamicsCapabilities((Map<String, String>) rawK9Variables);
+  public static AppdynamicsCapability extractFrom(Capabilities capabilities) {
+    Object rawAppdynamicsCapability = capabilities.getCapability(APPDYNAMICS_CAPABILITIES);
+    AppdynamicsCapability appdynamicsCapability = new AppdynamicsCapability();
+    if (rawAppdynamicsCapability != null) {
+      if (rawAppdynamicsCapability instanceof AppdynamicsCapability) {
+        appdynamicsCapability = (AppdynamicsCapability) rawAppdynamicsCapability;
+      } else if (rawAppdynamicsCapability instanceof Map) {
+        appdynamicsCapability = new AppdynamicsCapability((Map<String, String>) rawAppdynamicsCapability);
       } else {
         throw new RuntimeException(
           String.format("Failed to parse appdynamics capabilities correctly. List of capabilities is %s", capabilities.toString()));
       }
     }
-    return appdynamicsCapabilities;
+    return appdynamicsCapability;
   }
 }
