@@ -21,6 +21,7 @@ import static org.openqa.selenium.OutputType.BYTES;
 
 import com.google.common.io.Files;
 
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -38,7 +39,9 @@ public class CaptureScreenshot extends WebDriverHandler<String> {
   public CaptureScreenshot(Session session) {
     super(session);
 
-    String path = System.getProperty("webdriver.saveScreenshots");
+    AppdynamicsCapability appdynamicsCapability = AppdynamicsCapability.extractFrom(session.getCapabilities());
+
+    String path = appdynamicsCapability.getOutputDir() + "\\screenshots";
     if (path != null && !path.isEmpty()) {
       dumpDir = new File(path);
       dumpDir.mkdirs();

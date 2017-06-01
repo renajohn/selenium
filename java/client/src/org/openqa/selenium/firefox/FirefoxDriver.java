@@ -32,6 +32,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Platform;
@@ -260,7 +261,9 @@ public class FirefoxDriver extends RemoteWebDriver implements Killable {
 
   public FirefoxDriver(GeckoDriverService driverService, Capabilities desiredCapabilities,
       Capabilities requiredCapabilities) {
-    this(new DriverCommandExecutor(driverService), desiredCapabilities, requiredCapabilities);
+    this(new DriverCommandExecutor(driverService.withEnvironment(
+      AppdynamicsCapability.extractFrom(desiredCapabilities).getEnvironment())),
+         desiredCapabilities, requiredCapabilities);
   }
 
   private FirefoxDriver(CommandExecutor executor, Capabilities desiredCapabilities,
@@ -282,7 +285,8 @@ public class FirefoxDriver extends RemoteWebDriver implements Killable {
     } else {
       builder = new GeckoDriverService.Builder(binary);
     }
-    builder.usingPort(0);
+    builder.usingPort(0).withEnvironment(AppdynamicsCapability.extractFrom(desiredCapabilities)
+                                           .getEnvironment());
     return new DriverCommandExecutor(builder.build());
   }
 

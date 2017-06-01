@@ -17,14 +17,13 @@
 
 package org.openqa.selenium.remote.server.rest;
 
-import static org.openqa.selenium.remote.CapabilityType.COMMAND_WEBHOOK;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import com.appdynamics.webhook.CommandWebhookClient;
 import com.appdynamics.webhook.HttpRequestException;
 
+import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.Command;
@@ -173,13 +172,10 @@ public class ResultConfig {
       return;
     }
 
-
-    Object raw = sessions.get(sessionId).getCapabilities().getCapability(COMMAND_WEBHOOK);
-    String webhookUrl;
-
-    if (raw instanceof String) {
-      webhookUrl = (String) raw;
-    } else {
+    AppdynamicsCapability appdynamicsCapability = AppdynamicsCapability.extractFrom(
+      sessions.get(sessionId).getCapabilities());
+    String webhookUrl = appdynamicsCapability.getCommandWebhook();
+    if (webhookUrl == null) {
       log.warning("Webhook capability is incorrect. Expected an end point.");
       return;
     }
