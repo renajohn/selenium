@@ -262,7 +262,7 @@ public class FirefoxDriver extends RemoteWebDriver implements Killable {
   public FirefoxDriver(GeckoDriverService driverService, Capabilities desiredCapabilities,
       Capabilities requiredCapabilities) {
     this(new DriverCommandExecutor(driverService.withEnvironment(
-      AppdynamicsCapability.extractFrom(desiredCapabilities).getK9Environment())),
+      AppdynamicsCapability.extractFrom(desiredCapabilities).getEnvironment())),
          desiredCapabilities, requiredCapabilities);
   }
 
@@ -286,7 +286,7 @@ public class FirefoxDriver extends RemoteWebDriver implements Killable {
       builder = new GeckoDriverService.Builder(binary);
     }
     builder.usingPort(0).withEnvironment(AppdynamicsCapability.extractFrom(desiredCapabilities)
-                                           .getK9Environment());
+                                           .getEnvironment());
     return new DriverCommandExecutor(builder.build());
   }
 

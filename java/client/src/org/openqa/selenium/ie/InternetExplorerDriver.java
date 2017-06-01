@@ -170,7 +170,7 @@ public class InternetExplorerDriver extends RemoteWebDriver {
     if (service == null) {
       service = setupService(capabilities, port);
     }
-    service.withEnvironment(AppdynamicsCapability.extractFrom(capabilities).getK9Environment());
+    service.withEnvironment(AppdynamicsCapability.extractFrom(capabilities).getEnvironment());
     run(service, capabilities);
   }
 

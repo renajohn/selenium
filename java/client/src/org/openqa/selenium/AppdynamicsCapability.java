@@ -22,11 +22,11 @@ public class AppdynamicsCapability {
    */
   public static  String COMMAND_WEBHOOK = "commandWebhook";
   /**
-   * This capability sets the K9 output directory.
+   * This capability sets the output directory.
    */
   public static String OUTPUT_DIR = "outputDir";
   /**
-   * This capability sets the K9 test id
+   * This capability sets the test id
    */
   public static String TEST_ID = "testId";
 
@@ -36,10 +36,9 @@ public class AppdynamicsCapability {
   /**
    * AppDynamics extension
    *
-   * This capability will make it possible to set environment variables for
-   * the K9 process
+   * This capability will is a set of all the appdynamics custom capabilities
    */
-  public static final String APPDYNAMICS_CAPABILITIES = "appdynamicsCapabilities";
+  public static final String APPDYNAMICS_CAPABILITIES = "appdynamicsCapability";
 
   public AppdynamicsCapability(Map<String, String> map) {
     if ( map.containsKey(OUTPUT_DIR) && !Strings.isNullOrEmpty(map.get(OUTPUT_DIR))) {
@@ -69,7 +68,7 @@ public class AppdynamicsCapability {
     return this.commandWebhook;
   }
 
-  public ImmutableMap<String, String> getK9Environment() {
+  public ImmutableMap<String, String> getEnvironment() {
     ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
     if (outputDir != null) {
       mapBuilder.put("K9_OUTPUT_DIR", outputDir);
