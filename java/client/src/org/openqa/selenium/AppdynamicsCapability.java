@@ -30,9 +30,16 @@ public class AppdynamicsCapability {
    */
   public static String TEST_ID = "testId";
 
+  /**
+   * This capability ensures that a new session is returned rather than the Singleton session
+   * Should be "true" or "false"
+   */
+  public static String FLUSH_SESSIONS = "flushSessions";
+
   private String outputDir;
   private String testID;
   private String commandWebhook;
+  private boolean flushSessions;
   /**
    * AppDynamics extension
    *
@@ -50,6 +57,9 @@ public class AppdynamicsCapability {
     if (map.containsKey(COMMAND_WEBHOOK) && !Strings.isNullOrEmpty(map.get(COMMAND_WEBHOOK))) {
       this.commandWebhook = map.get(COMMAND_WEBHOOK);
     }
+    if (map.containsKey(FLUSH_SESSIONS) && !Strings.isNullOrEmpty(map.get(FLUSH_SESSIONS))) {
+      this.flushSessions = Boolean.parseBoolean(map.get(FLUSH_SESSIONS));
+    }
   }
 
   public AppdynamicsCapability() {
@@ -66,6 +76,10 @@ public class AppdynamicsCapability {
 
   public String getCommandWebhook() {
     return this.commandWebhook;
+  }
+
+  public boolean flushSessions() {
+    return this.flushSessions;
   }
 
   public ImmutableMap<String, String> getEnvironment() {
