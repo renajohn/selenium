@@ -2,7 +2,10 @@ package org.openqa.selenium.remote.server;
 
 import org.openqa.selenium.AppdynamicsCapability;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.SessionId;
+import org.openqa.selenium.remote.server.handler.DeleteSession;
+import org.openqa.selenium.remote.server.rest.RestishHandler;
 
 import java.util.logging.Logger;
 
@@ -22,6 +25,7 @@ public class SingletonDriverSessions extends DefaultDriverSessions {
               uniqueSessionId = super.newSession(desiredCapabilities);
             }
         }
+        logger.info("Session ID is " + uniqueSessionId.toString());
         return uniqueSessionId;
     }
 
@@ -34,6 +38,12 @@ public class SingletonDriverSessions extends DefaultDriverSessions {
     private void flushAllExistingSessions() {
       logger.info("NewSession: Flushing all sessions");
       for (SessionId sessionId : super.getSessions()) {
+        DeleteSession deleteSession = new DeleteSession(super.get(sessionId));
+        try {
+            deleteSession.call();
+        } catch (Exception e) {
+            logger.info("Quiting the session failed due to " + e.toString());
+        }
         super.deleteSession(sessionId);
       }
     }
