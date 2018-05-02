@@ -18,6 +18,7 @@
 package org.openqa.selenium.remote.server.rest;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import com.appdynamics.webhook.CommandWebhookClient;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 public class ResultConfig {
 
@@ -113,9 +115,9 @@ public class ResultConfig {
       throwUpIfSessionTerminated(sessionId);
 
       if (DriverCommand.STATUS.equals(command.getName())) {
-        log.fine(String.format("Executing: %s)", handler));
+        log.fine(removeCredentials("Executing: " + handler));
       } else {
-        log.info(String.format("Executing: %s)", handler));
+        log.info(removeCredentials("Executing: " + handler));
       }
 
       reportCommand(sessionId, command);
@@ -131,9 +133,9 @@ public class ResultConfig {
       }
 
       if (DriverCommand.STATUS.equals(command.getName())) {
-        log.fine("Done: " + handler);
+        log.fine(removeCredentials("Done: " + handler));
       } else {
-        log.info("Done: " + handler);
+        log.info(removeCredentials("Done: " + handler));
       }
 
     } catch (UnreachableBrowserException e) {
@@ -164,6 +166,34 @@ public class ResultConfig {
       sessions.deleteSession(sessionId);
     }
     return response;
+  }
+
+  private String removeCredentials(String command) {
+    if (Strings.isNullOrEmpty(command)) {
+      return command;
+    }
+
+    if (command.contains("send keys")) {
+      java.util.regex.Pattern credentialsPattern =
+        java.util.regex.Pattern
+          .compile("(.*)(send keys:).*(])", java.util.regex.Pattern.CASE_INSENSITIVE);
+      Matcher matcher = credentialsPattern.matcher(command);
+
+      if (matcher.matches()) {
+        return matcher.group(1) + matcher.group(2) + " REDACTED" + matcher.group(3);
+      }
+    } else {
+
+      java.util.regex.Pattern credentialsPattern =
+        java.util.regex.Pattern
+          .compile("(.*)(https?://).*@(.*$)(.*)", java.util.regex.Pattern.CASE_INSENSITIVE);
+      Matcher matcher = credentialsPattern.matcher(command);
+
+      if (matcher.matches()) {
+        return matcher.group(1) + matcher.group(2) + matcher.group(3) + matcher.group(4);
+      }
+    }
+    return command;
   }
 
   private void reportCommand(SessionId sessionId, Command command)
