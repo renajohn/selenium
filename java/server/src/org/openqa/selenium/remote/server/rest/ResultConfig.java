@@ -58,6 +58,12 @@ public class ResultConfig {
   private final Logger log;
   // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
   private static CommandWebhookClient commandWebhookClient;
+  private static final java.util.regex.Pattern sendKeysPattern =
+    java.util.regex.Pattern
+      .compile("(.*)(send keys:).*(])", java.util.regex.Pattern.CASE_INSENSITIVE);
+  private static final java.util.regex.Pattern credentialsPattern =
+    java.util.regex.Pattern
+      .compile("(.*)(https?://).*@(.*$)", java.util.regex.Pattern.CASE_INSENSITIVE);
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
@@ -174,23 +180,16 @@ public class ResultConfig {
     }
 
     if (command.contains("send keys")) {
-      java.util.regex.Pattern credentialsPattern =
-        java.util.regex.Pattern
-          .compile("(.*)(send keys:).*(])", java.util.regex.Pattern.CASE_INSENSITIVE);
-      Matcher matcher = credentialsPattern.matcher(command);
+      Matcher matcher = sendKeysPattern.matcher(command);
 
       if (matcher.matches()) {
         return matcher.group(1) + matcher.group(2) + " REDACTED" + matcher.group(3);
       }
     } else {
-
-      java.util.regex.Pattern credentialsPattern =
-        java.util.regex.Pattern
-          .compile("(.*)(https?://).*@(.*$)(.*)", java.util.regex.Pattern.CASE_INSENSITIVE);
       Matcher matcher = credentialsPattern.matcher(command);
 
       if (matcher.matches()) {
-        return matcher.group(1) + matcher.group(2) + matcher.group(3) + matcher.group(4);
+        return matcher.group(1) + matcher.group(2) + matcher.group(3);
       }
     }
     return command;
