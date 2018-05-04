@@ -40,6 +40,7 @@ import org.openqa.selenium.remote.server.handler.DeleteSession;
 import org.openqa.selenium.remote.server.handler.WebDriverHandler;
 import org.openqa.selenium.remote.server.log.LoggingManager;
 import org.openqa.selenium.remote.server.log.PerSessionLogHandler;
+import java.util.regex.Pattern;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -58,12 +59,10 @@ public class ResultConfig {
   private final Logger log;
   // lazy initialization by the first call of ResultConfig. This is needed to propagate the log object
   private static CommandWebhookClient commandWebhookClient;
-  private static final java.util.regex.Pattern sendKeysPattern =
-    java.util.regex.Pattern
-      .compile("(.*)(send keys:).*(])", java.util.regex.Pattern.CASE_INSENSITIVE);
-  private static final java.util.regex.Pattern credentialsPattern =
-    java.util.regex.Pattern
-      .compile("(.*)(https?://).*@(.*$)", java.util.regex.Pattern.CASE_INSENSITIVE);
+  private static final Pattern sendKeysPattern =
+    Pattern.compile("(.*)(send keys:).*(])", java.util.regex.Pattern.CASE_INSENSITIVE);
+  private static final Pattern credentialsPattern =
+    Pattern.compile("(.*)(https?://).*@(.*$)", java.util.regex.Pattern.CASE_INSENSITIVE);
 
   public ResultConfig(
       String commandName, Class<? extends RestishHandler<?>> handlerClazz,
