@@ -177,7 +177,4 @@ public interface DriverCommand {
   // Mobile API
   String GET_NETWORK_CONNECTION = "getNetworkConnection";
   String SET_NETWORK_CONNECTION = "setNetworkConnection";
-
-  // Used to access the remote driver directly
-  String GET_REMOTE_DRIVER_URL = "getRemoteDriverUrl";
 }

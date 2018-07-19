@@ -5,50 +5,33 @@ import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 
-/**
- * Created by shashwat.srivastava on 5/30/17.
- */
+// This class encompasses AppDynamics specific capabilities that modify the behavior of
+// the standalone selenium webdriver server when run in the context of the Synthetic Agent.
+//
+// Copyright 2016 AppDynamics inc. All rights reserved
 public class AppdynamicsCapability {
-  /**
-   * AppDynamics extensions
-   *
-   * This capability forwards all commands to a specified end point before executing them.
-   *
-   * This capability affects the remote webdriver server, not the clients.
-   *
-   * @author Renault John Lecoultre <renault.lecoultre@appdynamics.com>
-   * @since 21/10/16
-   * Copyright 2016 AppDynamics inc. All rights reserved
-   */
-  public static  String COMMAND_WEBHOOK = "commandWebhook";
-  /**
-   * This capability sets the output directory.
-   */
-  public static String OUTPUT_DIR = "outputDir";
-  /**
-   * This capability sets the test id
-   */
-  public static String TEST_ID = "testId";
+  public static final String APPDYNAMICS_CAPABILITIES = "appdynamicsCapability";
 
-  /**
-   * This capability ensures that a new session is returned rather than the Singleton session
-   * Should be "true" or "false"
-   */
-  public static String FLUSH_SESSIONS = "flushSessions";
+  // Capability key that specifies the URL to forward the webdriver commands.
+  private static final String COMMAND_WEBHOOK = "commandWebhook";
+  // Capability key that specifies the test output directory.
+  private static final String OUTPUT_DIR = "outputDir";
+  // Capability key that specifies the test ID.
+  private static final String TEST_ID = "testId";
+  // Capability key that specifies whether the current session should flush all existing
+  // sessions before creating a new one.
+  private static final String FLUSH_SESSIONS = "flushSessions";
+
+  // Default endpoint for forwarding webdriver commands.
+  private static final String DEFAULT_COMMAND_WEBHOOK = "http://localhost:8888/v1/webdriver/action";
 
   private String outputDir;
   private String testID;
-  private String commandWebhook;
+  private String commandWebhook = DEFAULT_COMMAND_WEBHOOK;
   private boolean flushSessions;
-  /**
-   * AppDynamics extension
-   *
-   * This capability will is a set of all the appdynamics custom capabilities
-   */
-  public static final String APPDYNAMICS_CAPABILITIES = "appdynamicsCapability";
 
   public AppdynamicsCapability(Map<String, String> map) {
-    if ( map.containsKey(OUTPUT_DIR) && !Strings.isNullOrEmpty(map.get(OUTPUT_DIR))) {
+    if (map.containsKey(OUTPUT_DIR) && !Strings.isNullOrEmpty(map.get(OUTPUT_DIR))) {
       this.outputDir = map.get(OUTPUT_DIR);
     }
     if (map.containsKey(TEST_ID) && !Strings.isNullOrEmpty(map.get(TEST_ID))) {
@@ -107,7 +90,8 @@ public class AppdynamicsCapability {
         appdynamicsCapability = new AppdynamicsCapability((Map<String, String>) rawAppdynamicsCapability);
       } else {
         throw new RuntimeException(
-          String.format("Failed to parse appdynamics capabilities correctly. List of capabilities is %s", capabilitiesMap.toString()));
+          String.format("Failed to parse AppDynamics capabilities correctly."
+                        + " List of capabilities is %s", capabilitiesMap.toString()));
       }
     }
     return appdynamicsCapability;
