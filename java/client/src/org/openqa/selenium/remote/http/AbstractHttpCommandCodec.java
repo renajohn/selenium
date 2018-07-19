@@ -105,7 +105,6 @@ import static org.openqa.selenium.remote.DriverCommand.TOUCH_SCROLL;
 import static org.openqa.selenium.remote.DriverCommand.TOUCH_SINGLE_TAP;
 import static org.openqa.selenium.remote.DriverCommand.TOUCH_UP;
 import static org.openqa.selenium.remote.DriverCommand.UPLOAD_FILE;
-import static org.openqa.selenium.remote.DriverCommand.GET_REMOTE_DRIVER_URL;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
@@ -243,9 +242,6 @@ public abstract class AbstractHttpCommandCodec implements CommandCodec<HttpReque
     defineCommand(SWITCH_TO_CONTEXT, post("/session/:sessionId/context"));
     defineCommand(GET_CURRENT_CONTEXT_HANDLE, get("/session/:sessionId/context"));
     defineCommand(GET_CONTEXT_HANDLES, get("/session/:sessionId/contexts"));
-
-    // Remote driver direct access
-    defineCommand(GET_REMOTE_DRIVER_URL, get("/session/:sessionId/remote_driver_url"));
   }
 
   @Override
