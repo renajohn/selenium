@@ -31,9 +31,11 @@ import java.util.stream.Collectors;
 public class ConfigureTimeout extends WebDriverHandler<Void> implements JsonParametersAware {
 
   private static final String IMPLICIT = "implicit";
-  private static final String PAGE_LOAD = "page load";
+  private static final String PAGE_LOAD_OSS = "page load";
+  private static final String PAGE_LOAD_W3C = "pageLoad";
   private static final String SCRIPT = "script";
-  private static final List<String> knownTypes = Arrays.asList(IMPLICIT, PAGE_LOAD, SCRIPT);
+  private static final List<String> knownTypes =
+      Arrays.asList(IMPLICIT, PAGE_LOAD_OSS, PAGE_LOAD_W3C, SCRIPT);
 
   private Map<String, Object> timeouts = new HashMap<>();
 
@@ -73,13 +75,22 @@ public class ConfigureTimeout extends WebDriverHandler<Void> implements JsonPara
             "Illegal (non-numeric) timeout value passed: " + timeouts.get(IMPLICIT), ex);
       }
     }
-    if (timeouts.containsKey(PAGE_LOAD)) {
+    if (timeouts.containsKey(PAGE_LOAD_OSS)) {
       try {
         getDriver().manage().timeouts().pageLoadTimeout(
-            ((Number) timeouts.get(PAGE_LOAD)).longValue(), TimeUnit.MILLISECONDS);
+            ((Number) timeouts.get(PAGE_LOAD_OSS)).longValue(), TimeUnit.MILLISECONDS);
       } catch (ClassCastException ex) {
         throw new WebDriverException(
-            "Illegal (non-numeric) timeout value passed: " + timeouts.get(PAGE_LOAD), ex);
+            "Illegal (non-numeric) timeout value passed: " + timeouts.get(PAGE_LOAD_OSS), ex);
+      }
+    }
+    if (timeouts.containsKey(PAGE_LOAD_W3C)) {
+      try {
+        getDriver().manage().timeouts().pageLoadTimeout(
+            ((Number) timeouts.get(PAGE_LOAD_W3C)).longValue(), TimeUnit.MILLISECONDS);
+      } catch (ClassCastException ex) {
+        throw new WebDriverException(
+            "Illegal (non-numeric) timeout value passed: " + timeouts.get(PAGE_LOAD_OSS), ex);
       }
     }
     if (timeouts.containsKey(SCRIPT)) {
