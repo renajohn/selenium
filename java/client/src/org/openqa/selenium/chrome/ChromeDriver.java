@@ -135,7 +135,7 @@ public class ChromeDriver extends RemoteWebDriver
    * @see #ChromeDriver(ChromeDriverService, Capabilities)
    */
   public ChromeDriver(Capabilities capabilities) {
-    this(ChromeDriverService.createDefaultService(), capabilities);
+    this(ChromeDriverService.createDefaultServiceWithCustomOptions(capabilities), capabilities);
   }
 
   /**

@@ -20,11 +20,14 @@ package org.openqa.selenium.chrome;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.service.DriverService;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manages the life and death of a chromedriver server.
@@ -64,6 +67,11 @@ public class ChromeDriverService extends DriverService {
   public final static String CHROME_DRIVER_WHITELISTED_IPS_PROPERTY = "webdriver.chrome.whitelistedIps";
 
   /**
+   * File that will be used by the ChromeDriverService to dump driver logs.
+   */
+  public final static String CHROME_DRIVER_LOG_FILE = "chromedriver.log";
+
+  /**
    *
    * @param executable The chromedriver executable.
    * @param port Which port to start the chromedriver on.
@@ -86,6 +94,24 @@ public class ChromeDriverService extends DriverService {
    */
   public static ChromeDriverService createDefaultService() {
     return new Builder().usingAnyFreePort().build();
+  }
+
+  /**
+   * Configures and returns a new {@link ChromeDriverService} using the default configuration and
+   * custom options. When ChromeDriverService is created, it identifies an immutable argument list
+   * at startup. The default list of arguments can be extended using the capabilities provided here.
+   * In this configuration, the service will use the chromedriver executable identified by the
+   * {@link #CHROME_DRIVER_EXE_PROPERTY} system property. Each service created by this method will
+   * be configured to use a free port on the current system.
+   *
+   * @return A new ChromeDriverService using the default configuration and custom options.
+   */
+  public static ChromeDriverService createDefaultServiceWithCustomOptions(Capabilities capabilities) {
+    Object appdynamicsCapabilities = capabilities.getCapability("appdynamicsCapability");
+    Map<String, String> caps = (HashMap<String, String>) appdynamicsCapabilities;
+    String logFilePath = caps.get("outputDir") + File.separator + CHROME_DRIVER_LOG_FILE;
+    File logFile = new File(logFilePath);
+    return new Builder().usingAnyFreePort().withLogFile(logFile).build();
   }
 
   /**
