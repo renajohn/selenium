@@ -72,6 +72,16 @@ public class ChromeDriverService extends DriverService {
   public final static String CHROME_DRIVER_LOG_FILE = "chromedriver.log";
 
   /**
+   * Environment variable to set default for chrome debug logs.
+   */
+  public final static String CHROME_LOG_FILE = "CHROME_LOG_FILE";
+
+  /**
+   * File that will hold the browser and extension logs from a Chrome session.
+   */
+  public final static String CHROME_BROWSER_LOG_FILE = "chrome.log";
+
+  /**
    *
    * @param executable The chromedriver executable.
    * @param port Which port to start the chromedriver on.
@@ -111,7 +121,9 @@ public class ChromeDriverService extends DriverService {
     Map<String, String> caps = (HashMap<String, String>) appdynamicsCapabilities;
     String logFilePath = caps.get("outputDir") + File.separator + CHROME_DRIVER_LOG_FILE;
     File logFile = new File(logFilePath);
-    return new Builder().usingAnyFreePort().withLogFile(logFile).build();
+    Map<String, String> chromeEnvironments = new HashMap<>();
+    chromeEnvironments.put(CHROME_LOG_FILE, caps.get("outputDir") + File.separator + CHROME_BROWSER_LOG_FILE);
+    return new Builder().usingAnyFreePort().withLogFile(logFile).withEnvironment(chromeEnvironments).build();
   }
 
   /**
