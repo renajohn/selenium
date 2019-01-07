@@ -107,9 +107,10 @@ public class ChromeDriverService extends DriverService {
   }
 
   /**
-   * Configures and returns a new {@link ChromeDriverService} using the default configuration and
-   * custom options. When ChromeDriverService is created, it identifies an immutable argument list
-   * at startup. The default list of arguments can be extended using the capabilities provided here.
+   * Configures and returns a new {@link ChromeDriverService}. On top of the default configuration,
+   * this makes two additional changes -
+   * (1) This sets a default log file for the chromedriver using the options provided.
+   * (2) This specifies an environment variable CHROME_LOG_FILE which is set before the browser is started.
    * In this configuration, the service will use the chromedriver executable identified by the
    * {@link #CHROME_DRIVER_EXE_PROPERTY} system property. Each service created by this method will
    * be configured to use a free port on the current system.
@@ -121,9 +122,9 @@ public class ChromeDriverService extends DriverService {
     Map<String, String> caps = (HashMap<String, String>) appdynamicsCapabilities;
     String logFilePath = caps.get("outputDir") + File.separator + CHROME_DRIVER_LOG_FILE;
     File logFile = new File(logFilePath);
-    Map<String, String> chromeEnvironments = new HashMap<>();
-    chromeEnvironments.put(CHROME_LOG_FILE, caps.get("outputDir") + File.separator + CHROME_BROWSER_LOG_FILE);
-    return new Builder().usingAnyFreePort().withLogFile(logFile).withEnvironment(chromeEnvironments).build();
+    Map<String, String> chromeEnvironment = new HashMap<>();
+    chromeEnvironment.put(CHROME_LOG_FILE, caps.get("outputDir") + File.separator + CHROME_BROWSER_LOG_FILE);
+    return new Builder().usingAnyFreePort().withLogFile(logFile).withEnvironment(chromeEnvironment).build();
   }
 
   /**
