@@ -31,6 +31,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.service.DriverCommandExecutor;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InternetExplorerDriver extends RemoteWebDriver {
 
@@ -142,6 +144,11 @@ public class InternetExplorerDriver extends RemoteWebDriver {
    */
   private final static int DEFAULT_PORT = 0;
 
+  /**
+   * Name of the default IEDriverServer log file.
+   */
+  public final static String IE_DRIVER_LOG_FILE = "driver.log";
+
   public InternetExplorerDriver() {
     this(null, null, DEFAULT_PORT);
   }
@@ -212,20 +219,6 @@ public class InternetExplorerDriver extends RemoteWebDriver {
       builder.usingPort(port);
 
       if (caps != null) {
-        if (caps.getCapability(LOG_FILE) != null) {
-          String value = (String) caps.getCapability(LOG_FILE);
-          if (value != null) {
-            builder.withLogFile(new File(value));
-          }
-        }
-
-        if (caps.getCapability(LOG_LEVEL) != null) {
-          String value = (String) caps.getCapability(LOG_LEVEL);
-          if (value != null) {
-            builder.withLogLevel(InternetExplorerDriverLogLevel.valueOf(value));
-          }
-        }
-
         if (caps.getCapability(HOST) != null) {
           String value = (String) caps.getCapability(HOST);
           if (value != null) {
@@ -247,6 +240,12 @@ public class InternetExplorerDriver extends RemoteWebDriver {
           }
         }
       }
+
+      builder.withLogLevel(InternetExplorerDriverLogLevel.INFO);
+      Object appdynamicsCapabilities = caps.getCapability("appdynamicsCapability");
+      Map<String, String> appdCaps = (HashMap<String, String>) appdynamicsCapabilities;
+      String logFilePath = appdCaps.get("outputDir") + File.separator + IE_DRIVER_LOG_FILE;
+      builder.withLogFile(new File(logFilePath));
 
       return builder.build();
 
