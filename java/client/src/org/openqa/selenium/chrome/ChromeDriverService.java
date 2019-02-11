@@ -108,7 +108,7 @@ public class ChromeDriverService extends DriverService {
 
   /**
    * Configures and returns a new {@link ChromeDriverService}. On top of the default configuration,
-   * this makes two additional changes -
+   * this makes two additional changes if the "captureLogs" option is set.
    * (1) This sets a default log file for the chromedriver using the options provided.
    * (2) This specifies an environment variable CHROME_LOG_FILE which is set before the browser is started.
    * In this configuration, the service will use the chromedriver executable identified by the
@@ -120,6 +120,11 @@ public class ChromeDriverService extends DriverService {
   public static ChromeDriverService createDefaultServiceWithCustomOptions(Capabilities capabilities) {
     Object appdynamicsCapabilities = capabilities.getCapability("appdynamicsCapability");
     Map<String, String> caps = (HashMap<String, String>) appdynamicsCapabilities;
+    if (!caps.containsKey("captureLogs") ||
+        caps.get("captureLogs") == null ||
+        caps.get("captureLogs").toLowerCase() != "true") {
+      return new Builder().usingAnyFreePort().build();
+    }
     String logFilePath = caps.get("outputDir") + File.separator + CHROME_DRIVER_LOG_FILE;
     File logFile = new File(logFilePath);
     Map<String, String> chromeEnvironment = new HashMap<>();
