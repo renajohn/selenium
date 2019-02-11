@@ -31,6 +31,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.service.DriverCommandExecutor;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InternetExplorerDriver extends RemoteWebDriver {
 
@@ -211,9 +213,15 @@ public class InternetExplorerDriver extends RemoteWebDriver {
       InternetExplorerDriverService.Builder builder = new InternetExplorerDriverService.Builder();
       builder.usingPort(port);
 
+      Object appdynamicsCapabilities = caps.getCapability("appdynamicsCapability");
+      Map<String, String> appdCaps = (HashMap<String, String>) appdynamicsCapabilities;
+
       if (caps != null) {
         if (caps.getCapability(LOG_FILE) != null) {
           String value = (String) caps.getCapability(LOG_FILE);
+          if (appdCaps.containsKey("outputDir")) {
+            value = appdCaps.get("outputDir") + File.separator + value;
+          }
           if (value != null) {
             builder.withLogFile(new File(value));
           }
