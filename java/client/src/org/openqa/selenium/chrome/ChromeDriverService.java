@@ -20,16 +20,24 @@ package org.openqa.selenium.chrome;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.logging.LoggingHandler;
 import org.openqa.selenium.remote.service.DriverService;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * Manages the life and death of a chromedriver server.
  */
 public class ChromeDriverService extends DriverService {
+
+  private final static Logger logger = Logger.getLogger(ChromeDriverService.class.getName());
 
   /**
    * System property that defines the location of the chromedriver executable that will be used by
@@ -64,6 +72,21 @@ public class ChromeDriverService extends DriverService {
   public final static String CHROME_DRIVER_WHITELISTED_IPS_PROPERTY = "webdriver.chrome.whitelistedIps";
 
   /**
+   * File that will be used by the ChromeDriverService to dump driver logs.
+   */
+  public final static String CHROME_DRIVER_LOG_FILE = "chromedriver.log";
+
+  /**
+   * Environment variable to set default for chrome debug logs.
+   */
+  public final static String CHROME_LOG_FILE = "CHROME_LOG_FILE";
+
+  /**
+   * File that will hold the browser and extension logs from a Chrome session.
+   */
+  public final static String CHROME_BROWSER_LOG_FILE = "chrome.log";
+
+  /**
    *
    * @param executable The chromedriver executable.
    * @param port Which port to start the chromedriver on.
@@ -86,6 +109,36 @@ public class ChromeDriverService extends DriverService {
    */
   public static ChromeDriverService createDefaultService() {
     return new Builder().usingAnyFreePort().build();
+  }
+
+  /**
+   * Configures and returns a new {@link ChromeDriverService}. On top of the default configuration,
+   * this makes two additional changes if the "captureLogs" option is set in appdynamicsCapabilities.
+   * (1) This sets a default log file for the chromedriver using the options provided.
+   * (2) This specifies an environment variable CHROME_LOG_FILE which is set before the browser is started.
+   * In this configuration, the service will use the chromedriver executable identified by the
+   * {@link #CHROME_DRIVER_EXE_PROPERTY} system property. Each service created by this method will
+   * be configured to use a free port on the current system.
+   *
+   * @return A new ChromeDriverService using the default configuration and custom options.
+   */
+  public static ChromeDriverService createDefaultService(Capabilities capabilities) {
+    logger.addHandler(LoggingHandler.getInstance());
+    Object appdynamicsCapabilities = capabilities.getCapability("appdynamicsCapability");
+    Map<String, String> caps = (TreeMap<String, String>) appdynamicsCapabilities;
+    if (caps == null ||
+        !caps.containsKey("captureLogs") ||
+        caps.get("captureLogs") == null ||
+        !caps.get("captureLogs").toLowerCase().equals("true")) {
+      logger.info("captureLogs was not set. Creating default service...");
+      return new Builder().usingAnyFreePort().build();
+    }
+    String logFilePath = caps.get("outputDir") + File.separator + CHROME_DRIVER_LOG_FILE;
+    File logFile = new File(logFilePath);
+    Map<String, String> chromeEnvironment = new HashMap<>();
+    chromeEnvironment.put(CHROME_LOG_FILE, caps.get("outputDir") + File.separator + CHROME_BROWSER_LOG_FILE);
+    logger.info("Creating ChromeDriverService with custom options...");
+    return new Builder().usingAnyFreePort().withLogFile(logFile).withEnvironment(chromeEnvironment).build();
   }
 
   /**
