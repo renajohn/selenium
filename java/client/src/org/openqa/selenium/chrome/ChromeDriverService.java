@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -122,10 +121,10 @@ public class ChromeDriverService extends DriverService {
    *
    * @return A new ChromeDriverService using the default configuration and custom options.
    */
-  public static ChromeDriverService createDefaultService(Capabilities capabilities) {
+  public static ChromeDriverService createDefaultServiceWithLogging(Capabilities capabilities) {
     logger.addHandler(LoggingHandler.getInstance());
     Object appdynamicsCapabilities = capabilities.getCapability("appdynamicsCapability");
-    Map<String, String> caps = (TreeMap<String, String>) appdynamicsCapabilities;
+    Map<String, String> caps = (HashMap<String, String>) appdynamicsCapabilities;
     if (caps == null ||
         !caps.containsKey("captureLogs") ||
         caps.get("captureLogs") == null ||
