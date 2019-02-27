@@ -295,11 +295,18 @@ public class DriverServlet extends HttpServlet {
             "message", e.getMessage() == null ? "" : e.getMessage(),
             "stacktrace", Throwables.getStackTraceAsString(e),
             "stackTrace", Stream.of(e.getStackTrace())
-                .map(element -> ImmutableMap.of(
-                    "fileName", element.getFileName(),
-                    "className", element.getClassName(),
-                    "methodName", element.getMethodName(),
-                    "lineNumber", element.getLineNumber()))
+                .map(element -> {
+                  String fileName = element.getFileName();
+                  String className = element.getClassName();
+                  String methodName = element.getMethodName();
+                  int lineNumber = element.getLineNumber();
+                  return ImmutableMap.of(
+                      "fileName", fileName == null ? "UNKNOWN" : fileName,
+                      "className", className == null ? "UNKNOWN" : className,
+                      "methodName", methodName == null ? "UNKNOWN" : methodName,
+                      "lineNumber", lineNumber
+                  );
+                })
                 .collect(ImmutableList.toImmutableList())));
 
     byte[] bytes = new Json().toJson(value).getBytes(UTF_8);
