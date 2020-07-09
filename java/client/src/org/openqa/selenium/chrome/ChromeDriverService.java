@@ -128,14 +128,16 @@ public class ChromeDriverService extends DriverService {
     if (caps == null ||
         !caps.containsKey("captureLogs") ||
         caps.get("captureLogs") == null ||
-        !caps.get("captureLogs").toLowerCase().equals("true")) {
-      logger.info("captureLogs was not set. Creating default service...");
+        !caps.get("captureLogs").toLowerCase().equals("true") ||
+        !caps.containsKey("chromedriverExecutablePath")) {
+      logger.info("appdynamicsCapabilities were not set. Creating default service...");
       return new Builder().usingAnyFreePort().build();
     }
     String logFilePath = caps.get("outputDir") + File.separator + CHROME_DRIVER_LOG_FILE;
     File logFile = new File(logFilePath);
     Map<String, String> chromeEnvironment = new HashMap<>();
     chromeEnvironment.put(CHROME_LOG_FILE, caps.get("outputDir") + File.separator + CHROME_BROWSER_LOG_FILE);
+    System.setProperty(CHROME_DRIVER_EXE_PROPERTY, caps.get("chromedriverExecutablePath"));
     logger.info("Creating ChromeDriverService with custom options...");
     return new Builder().usingAnyFreePort().withLogFile(logFile).withEnvironment(chromeEnvironment).build();
   }
