@@ -36,27 +36,23 @@ prebuilt_jar(name = 'repackage',
 java_binary(
   name = 'bundle-jars',
   deps = [
-    ':jetty-continuation-repacked',
     ':jetty-http-repacked',
     ':jetty-io-repacked',
     ':jetty-jmx-repacked',
     ':jetty-security-repacked',
     ':jetty-server-repacked',
     ':jetty-servlet-repacked',
-    ':jetty-servlets-repacked',
     ':jetty-util-repacked',
   ],
 )
 
 REPACK = [
-  'jetty-continuation',
   'jetty-http',
   'jetty-io',
   'jetty-jmx',
   'jetty-security',
   'jetty-server',
   'jetty-servlet',
-  'jetty-servlets',
   'jetty-util',
 ]
 for i in REPACK:
@@ -92,16 +88,6 @@ prebuilt_jar(
   ],
   visibility = [
     '//third_party/java/websocket:websocket-client'
-  ],
-)
-
-prebuilt_jar(
-  name = 'jetty-continuation',
-  maven_coords = 'org.eclipse.jetty:jetty-continuation:jar:9.4.7.v20170914',
-  binary_jar = 'jetty-continuation-9.4.7.v20170914.jar',
-  source_jar = 'jetty-continuation-9.4.7.v20170914-sources.jar',
-  deps = [
-    '//third_party/java/servlet:servlet-api'
   ],
 )
 
@@ -171,20 +157,6 @@ prebuilt_jar(
   deps = [
     ':jetty-jmx',
     ':jetty-security'
-  ],
-)
-
-prebuilt_jar(
-  name = 'jetty-servlets',
-  maven_coords = 'org.eclipse.jetty:jetty-servlets:jar:9.4.7.v20170914',
-  binary_jar = 'jetty-servlets-9.4.7.v20170914.jar',
-  source_jar = 'jetty-servlets-9.4.7.v20170914-sources.jar',
-  deps = [
-    ':jetty-continuation',
-    ':jetty-http',
-    ':jetty-io',
-    ':jetty-util',
-    '//third_party/java/servlet:servlet-api'
   ],
 )
 
